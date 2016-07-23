@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright 2014 Nest Labs Inc. All Rights Reserved.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software * distributed under
+the License is distributed on an "AS IS" BASIS, * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+either express or implied. * See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<LinearLayout
+    android:id="@+id/range_control"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:layout_centerHorizontal="true"
+    android:orientation="horizontal"
+    android:visibility="gone">
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_marginRight="12dp">
+        <TextView
+            android:id="@+id/temp_cool_up"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|center_horizontal"
+            android:padding="@dimen/control_padding"
+            android:text="@string/increase_temp"
+            android:textColor="@color/white"
+            android:textSize="@dimen/control_temp_size" />
+
+        <TextView
+            android:id="@+id/current_cool_temp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textColor="@color/white"
+            android:textSize="@dimen/temp_text_size" />
+
+        <TextView
+            android:id="@+id/temp_cool_down"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:padding="@dimen/control_padding"
+            android:text="@string/decrease_temp"
+            android:textColor="@color/white"
+            android:textSize="@dimen/control_temp_size" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true">
+        <TextView
+            android:id="@+id/temp_heat_up"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|center_horizontal"
+            android:padding="@dimen/control_padding"
+            android:text="@string/increase_temp"
+            android:textColor="@color/white"
+            android:textSize="@dimen/control_temp_size" />
+
+        <TextView
+            android:id="@+id/current_heat_temp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textColor="@color/white"
+            android:textSize="@dimen/temp_text_size" />
+
+        <TextView
+            android:id="@+id/temp_heat_down"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:padding="@dimen/control_padding"
+            android:text="@string/decrease_temp"
+            android:textColor="@color/white"
+            android:textSize="@dimen/control_temp_size" />
+    </FrameLayout>
+</LinearLayout>
