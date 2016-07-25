@@ -62,7 +62,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main2);
         mActivity = this;
 
         mThermostatView = findViewById(R.id.thermostat_view);
@@ -152,6 +152,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 temp++;
                 mCurrentTempText.setText(String.format(DEG_F, temp));
                 mNest.thermostats.setTargetTemperatureF(mThermostat.getDeviceId(), temp);
+                //String.format("%.0f",Energy.centsToTemp(mThermostat.getAmbientTemperatureC(), Double.parseDouble(FtoC(temp)), true)-Energy.centsToTemp(mThermostat.getAmbientTemperatureC(), Double.parseDouble(FtoC(newTemp)), true))
                 break;
             case R.id.temp_down:
                 temp--;
@@ -299,7 +300,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     private void updateStructureViews() {
-        mStructureNameText.setText(mStructure.getName());
+//        mStructureNameText.setText(mStructure.getName());
         mStructureAway.setText(mStructure.getAway());
     }
 
