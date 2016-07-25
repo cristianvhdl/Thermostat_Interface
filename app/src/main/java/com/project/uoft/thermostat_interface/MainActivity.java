@@ -2,8 +2,10 @@ package com.project.uoft.thermostat_interface;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -17,6 +19,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.nestlabs.sdk.Callback;
 import com.nestlabs.sdk.GlobalUpdate;
@@ -62,6 +65,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private TextView mSavingText;
     private double display_temp;
+    private Drawable default_btn_bg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -163,6 +167,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             case R.id.coin_img:
                 mSavingText.setText("Saving");
                 mNest.thermostats.setTargetTemperatureC(mThermostat.getDeviceId(), display_temp);
+//                Toast.makeText(getApplicationContext(), "Save!!", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "Clicked Coin");
                 break;
             case R.id.temp_up:
@@ -329,6 +334,21 @@ public class MainActivity extends Activity implements View.OnClickListener {
         String mode = mThermostat.getHvacMode();
         String state = mStructure.getAway();
         boolean isAway = state.equals(KEY_AWAY) || state.equals(KEY_AUTO_AWAY);
+        Drawable default_btn_bg = findViewById(R.id.structure_away_btn).getBackground();
+
+        if(KEY_HEAT.equals(mode)){
+            findViewById(R.id.heat).setBackground(ContextCompat.getDrawable(this,R.drawable.highlight_button));
+            findViewById(R.id.cool).setBackground(default_btn_bg);
+            findViewById(R.id.off).setBackground(default_btn_bg);
+        }else if(KEY_COOL.equals(mode)){
+            findViewById(R.id.cool).setBackground(ContextCompat.getDrawable(this,R.drawable.highlight_button));
+            findViewById(R.id.heat).setBackground(default_btn_bg);
+            findViewById(R.id.off).setBackground(default_btn_bg);
+        }else if(KEY_OFF.equals(mode)){
+            findViewById(R.id.off).setBackground(ContextCompat.getDrawable(this,R.drawable.highlight_button));
+            findViewById(R.id.cool).setBackground(default_btn_bg);
+            findViewById(R.id.heat).setBackground(default_btn_bg);
+        }
 
         if (isAway) {
             singleControlVisibility = View.VISIBLE;
