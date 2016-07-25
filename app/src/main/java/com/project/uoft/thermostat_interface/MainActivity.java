@@ -39,6 +39,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private static final String KEY_HEAT_COOL = "heat-cool";
     private static final String KEY_OFF = "off";
     private static final String DEG_F = "%d°F";
+    private static final String DEG_C = "%.1f°C";
     private static final String CLIENT_ID = Constants.CLIENT_ID;
     private static final String CLIENT_SECRET = Constants.CLIENT_SECRET;
     private static final String REDIRECT_URL = Constants.REDIRECT_URL;
@@ -59,27 +60,35 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private Structure mStructure;
     private Activity mActivity;
 
+    private TextView mSavingText;
+    private double display_temp;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main2);
+        setContentView(R.layout.activity_main);
         mActivity = this;
 
         mThermostatView = findViewById(R.id.thermostat_view);
         mSingleControlContainer = findViewById(R.id.single_control);
         mCurrentTempText = (TextView) findViewById(R.id.current_temp);
-        mStructureNameText = (TextView) findViewById(R.id.structure_name);
+//        mStructureNameText = (TextView) findViewById(R.id.structure_name);
         mAmbientTempText = (TextView) findViewById(R.id.ambient_temp);
         mStructureAway = (Button) findViewById(R.id.structure_away_btn);
         mRangeControlContainer = findViewById(R.id.range_control);
         mCurrentCoolTempText = (TextView) findViewById(R.id.current_cool_temp);
         mCurrentHeatTempText = (TextView) findViewById(R.id.current_heat_temp);
 
+        mSavingText = (TextView) findViewById(R.id.saving_text);
+
         mStructureAway.setOnClickListener(this);
         findViewById(R.id.logout_button).setOnClickListener(this);
         findViewById(R.id.heat).setOnClickListener(this);
         findViewById(R.id.cool).setOnClickListener(this);
+
         findViewById(R.id.heat_cool).setOnClickListener(this);
+        findViewById(R.id.heat_cool).setEnabled(false);
+
         findViewById(R.id.off).setOnClickListener(this);
         findViewById(R.id.temp_up).setOnClickListener(this);
         findViewById(R.id.temp_down).setOnClickListener(this);
@@ -87,6 +96,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         findViewById(R.id.temp_cool_down).setOnClickListener(this);
         findViewById(R.id.temp_heat_up).setOnClickListener(this);
         findViewById(R.id.temp_heat_down).setOnClickListener(this);
+
+        findViewById(R.id.coin_img).setOnClickListener(this);
 
         NestAPI.setAndroidContext(this);
         mNest = NestAPI.getInstance();
@@ -103,6 +114,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
             mThermostat = savedInstanceState.getParcelable(THERMOSTAT_KEY);
             mStructure = savedInstanceState.getParcelable(STRUCTURE_KEY);
             updateViews();
+        }
+
+        if (mThermostat != null) {
+            display_temp = mThermostat.getTargetTemperatureC();
         }
     }
 
@@ -145,19 +160,26 @@ public class MainActivity extends Activity implements View.OnClickListener {
         String thermostatID = mThermostat.getDeviceId();
         String mode = mThermostat.getHvacMode();
         String awayState = mStructure.getAway();
-        long temp = mThermostat.getTargetTemperatureF();
+//        double temp = mThermostat.getTargetTemperatureC();
+//        double init_temp = mThermostat.getTargetTemperatureC();
 
         switch (v.getId()) {
+            case R.id.coin_img:
+                mSavingText.setText("Saving");
+                mNest.thermostats.setTargetTemperatureC(mThermostat.getDeviceId(), display_temp);
+                Log.d(TAG, "Clicked Coin");
+                break;
             case R.id.temp_up:
-                temp++;
-                mCurrentTempText.setText(String.format(DEG_F, temp));
-                mNest.thermostats.setTargetTemperatureF(mThermostat.getDeviceId(), temp);
-                //String.format("%.0f",Energy.centsToTemp(mThermostat.getAmbientTemperatureC(), Double.parseDouble(FtoC(temp)), true)-Energy.centsToTemp(mThermostat.getAmbientTemperatureC(), Double.parseDouble(FtoC(newTemp)), true))
+                display_temp+=0.5;
+                updateSingleControlView();
+                mCurrentTempText.setText(String.format(DEG_C, display_temp));
+//                mNest.thermostats.setTargetTemperatureC(mThermostat.getDeviceId(), temp);
                 break;
             case R.id.temp_down:
-                temp--;
-                mCurrentTempText.setText(String.format(DEG_F, temp));
-                mNest.thermostats.setTargetTemperatureF(mThermostat.getDeviceId(), temp);
+                display_temp-=0.5;
+                updateSingleControlView();
+                mCurrentTempText.setText(String.format(DEG_C, display_temp));
+//                mNest.thermostats.setTargetTemperatureC(mThermostat.getDeviceId(), temp);
                 break;
             case R.id.temp_heat_up:
             case R.id.temp_heat_down:
@@ -290,13 +312,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
             return;
         }
 
+        display_temp = mThermostat.getTargetTemperatureC();
         updateAmbientTempTextView();
         updateStructureViews();
         updateThermostatViews();
     }
 
     private void updateAmbientTempTextView() {
-        mAmbientTempText.setText(String.format(DEG_F, mThermostat.getAmbientTemperatureF()));
+        mAmbientTempText.setText(String.format(DEG_C, mThermostat.getAmbientTemperatureC()));
     }
 
     private void updateStructureViews() {
@@ -358,14 +381,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private void updateSingleControlView() {
         int thermDrawable = R.drawable.off_thermostat_drawable;
-        long targetF = mThermostat.getTargetTemperatureF();
-        long ambientF = mThermostat.getAmbientTemperatureF();
-        long tempDiffF = targetF - ambientF;
+//        double targetC= mThermostat.getTargetTemperatureC();
+        double targetC = display_temp;
+        double ambientC = mThermostat.getAmbientTemperatureC();
+        double tempDiffC = targetC - ambientC;
         String state = mStructure.getAway();
         String mode = mThermostat.getHvacMode();
         boolean isAway = state.equals(KEY_AWAY) || state.equals(KEY_AUTO_AWAY);
-        boolean isHeating = KEY_HEAT.equals(mode) && tempDiffF > 0;
-        boolean isCooling = KEY_COOL.equals(mode) && tempDiffF < 0;
+        boolean isHeating = KEY_HEAT.equals(mode) && tempDiffC > 0;
+        boolean isCooling = KEY_COOL.equals(mode) && tempDiffC < 0;
 
         if (isAway) {
             mCurrentTempText.setText(R.string.thermostat_away);
@@ -378,7 +402,25 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
 
         // Update the view.
-        mCurrentTempText.setText(String.format(DEG_F, targetF));
+        mCurrentTempText.setText(String.format(DEG_C, targetC));
         mThermostatView.setBackgroundResource(thermDrawable);
+        updateSaving(!isCooling && !isHeating);
+    }
+
+    /*
+    Todo: update comment
+     */
+    private void updateSaving(boolean isOff) {
+        String mode = mThermostat.getHvacMode();
+        double init_temp = mThermostat.getTargetTemperatureC();
+        double temp_diff = init_temp - display_temp;    // cooling -> negative: saving, heating -> positive: saving
+
+        if(!isOff) {  // while the HVAC is ON, the saving will be updated
+            Log.e(TAG, "Update Saving");
+            double saving = Energy.centsToTemp(mThermostat.getAmbientTemperatureC(), init_temp, KEY_COOL.equals(mode))
+                    - Energy.centsToTemp(mThermostat.getAmbientTemperatureC(), display_temp, KEY_COOL.equals(mode));
+            mSavingText.setText(String.format("%.0f", saving));
+        }
+
     }
 }

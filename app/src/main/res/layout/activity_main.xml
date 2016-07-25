@@ -8,21 +8,21 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/structure_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_toLeftOf="@+id/textView"
-        android:layout_toStartOf="@+id/textView"
-        android:paddingEnd="0dp"
-        android:paddingLeft="5dp"
-        android:paddingRight="0dp"
-        android:paddingStart="5dp"
-        android:text="@string/ellipsis"
-        android:textSize="18sp" />
+    <!--<TextView-->
+        <!--android:id="@+id/structure_name"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_alignParentLeft="true"-->
+        <!--android:layout_alignParentStart="true"-->
+        <!--android:layout_alignParentTop="true"-->
+        <!--android:layout_toLeftOf="@+id/textView"-->
+        <!--android:layout_toStartOf="@+id/textView"-->
+        <!--android:paddingEnd="0dp"-->
+        <!--android:paddingLeft="5dp"-->
+        <!--android:paddingRight="0dp"-->
+        <!--android:paddingStart="5dp"-->
+        <!--android:text="@string/ellipsis"-->
+        <!--android:textSize="18sp" />-->
     <Button
         android:id="@+id/structure_away_btn"
         android:layout_width="wrap_content"
@@ -30,6 +30,33 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/structure_name" />
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/thermostat_view"
+        android:layout_alignParentRight="true"
+        >
+        <!--android:layout_centerHorizontal="true"-->
+
+        <ImageView
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:id="@+id/coin_img"
+            android:src="@drawable/coin" />
+        <TextView
+            android:id="@+id/saving_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/coin_img"
+            android:layout_alignTop="@+id/coin_img"
+            android:layout_alignRight="@+id/coin_img"
+            android:layout_alignBottom="@+id/coin_img"
+            android:layout_margin="1dp"
+            android:gravity="center"
+            android:text="Saving"
+            android:textColor="#000000" />
+    </RelativeLayout>
 
     <TextView
         android:id="@+id/ambient_temp"
@@ -121,8 +148,8 @@
         android:textStyle="bold" />
     <Button
         android:id="@+id/logout_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_alignTop="@+id/ambient_temp"

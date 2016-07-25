@@ -72,16 +72,16 @@
         <ImageView
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:id="@+id/imageView2"
+            android:id="@+id/coin_img"
             android:src="@drawable/coin" />
         <TextView
-            android:id="@+id/myImageViewText"
+            android:id="@+id/saving_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/imageView2"
-            android:layout_alignTop="@+id/imageView2"
-            android:layout_alignRight="@+id/imageView2"
-            android:layout_alignBottom="@+id/imageView2"
+            android:layout_alignLeft="@+id/coin_img"
+            android:layout_alignTop="@+id/coin_img"
+            android:layout_alignRight="@+id/coin_img"
+            android:layout_alignBottom="@+id/coin_img"
             android:layout_margin="1dp"
             android:gravity="center"
             android:text="Coin"
@@ -91,7 +91,7 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="150dp"
-        android:id="@+id/imageView"
+        android:id="@+id/piggy_img"
         android:layout_gravity="center"
         android:src="@drawable/piggy"
         android:layout_below="@+id/thermostat_view"
@@ -185,8 +185,8 @@
         android:textStyle="bold" />
     <Button
         android:id="@+id/logout_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_alignTop="@+id/ambient_temp"
