@@ -39,6 +39,7 @@ public class Energy {
             Log.v("Energy", "Need "+ timeToTemp(currTempC, tarTempC, cooling)/60 + "hours to reach "+tarTempC +" C");
             return timeToTemp(currTempC, tarTempC, cooling)/60 * COOLING_POWER * ELEC_ON_PEAK;
         }else{
+            Log.v("Energy", "Need "+ timeToTemp(currTempC, tarTempC, cooling)/60 + "hours to reach "+tarTempC +" C");
             return timeToTemp(currTempC, tarTempC, cooling)/60 * HEATING_POWER * ELEC_ON_PEAK;
         }
     }

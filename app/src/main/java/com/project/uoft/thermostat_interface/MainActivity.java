@@ -115,10 +115,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
             mStructure = savedInstanceState.getParcelable(STRUCTURE_KEY);
             updateViews();
         }
-
-        if (mThermostat != null) {
-            display_temp = mThermostat.getTargetTemperatureC();
-        }
     }
 
     @Override
@@ -412,14 +408,22 @@ public class MainActivity extends Activity implements View.OnClickListener {
      */
     private void updateSaving(boolean isOff) {
         String mode = mThermostat.getHvacMode();
-        double init_temp = mThermostat.getTargetTemperatureC();
-        double temp_diff = init_temp - display_temp;    // cooling -> negative: saving, heating -> positive: saving
+        double ambient_temp = mThermostat.getAmbientTemperatureC();
+        double init_target_temp = mThermostat.getTargetTemperatureC();
+        double temp_diff = init_target_temp - display_temp;    // cooling -> negative: saving, heating -> positive: saving
+        if(temp_diff == 0)
+            mSavingText.setText("¢ "+0);
 
-        if(!isOff) {  // while the HVAC is ON, the saving will be updated
+        if(KEY_COOL.equals(mode) && init_target_temp > ambient_temp)
+            init_target_temp = ambient_temp;
+        else if(KEY_HEAT.equals(mode) && init_target_temp < ambient_temp)
+            init_target_temp = ambient_temp;
+
+        if(!isOff || display_temp == ambient_temp) {  // while the HVAC is ON, the saving will be updated
             Log.e(TAG, "Update Saving");
-            double saving = Energy.centsToTemp(mThermostat.getAmbientTemperatureC(), init_temp, KEY_COOL.equals(mode))
+            double saving = Energy.centsToTemp(mThermostat.getAmbientTemperatureC(), init_target_temp, KEY_COOL.equals(mode))
                     - Energy.centsToTemp(mThermostat.getAmbientTemperatureC(), display_temp, KEY_COOL.equals(mode));
-            mSavingText.setText(String.format("%.0f", saving));
+            mSavingText.setText("¢ "+String.format("%.0f", saving));
         }
 
     }
