@@ -167,19 +167,21 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         switch (v.getId()) {
             case R.id.coin_img:
-                mSavingText.setText("Saving");
+//                mSavingText.setText("¢" + 0);
                 mNest.thermostats.setTargetTemperatureC(mThermostat.getDeviceId(), display_temp);
 //                Toast.makeText(getApplicationContext(), "Save!!", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "Clicked Coin");
                 break;
             case R.id.temp_up:
-                display_temp+=0.5;
+                if(display_temp < 32)
+                    display_temp+=0.5;
                 updateSingleControlView();
                 mCurrentTempText.setText(String.format(DEG_C, display_temp));
 //                mNest.thermostats.setTargetTemperatureC(mThermostat.getDeviceId(), temp);
                 break;
             case R.id.temp_down:
-                display_temp-=0.5;
+                if(display_temp > 9)
+                    display_temp-=0.5;
                 updateSingleControlView();
                 mCurrentTempText.setText(String.format(DEG_C, display_temp));
 //                mNest.thermostats.setTargetTemperatureC(mThermostat.getDeviceId(), temp);
@@ -363,6 +365,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         } else if (KEY_OFF.equals(mode)) {
             singleControlVisibility = View.VISIBLE;
             rangeControlVisibility = View.GONE;
+            findViewById(R.id.temp_up).setVisibility(View.GONE);
+            findViewById(R.id.temp_down).setVisibility(View.GONE);
             mCurrentTempText.setText(R.string.thermostat_off);
             mThermostatView.setBackgroundResource(R.drawable.off_thermostat_drawable);
         } else {
