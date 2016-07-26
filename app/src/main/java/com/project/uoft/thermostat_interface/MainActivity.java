@@ -66,6 +66,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private TextView mSavingText;
     private double display_temp;
     private Drawable default_btn_bg;
+    private TextView mElecStatusText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +85,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mCurrentHeatTempText = (TextView) findViewById(R.id.current_heat_temp);
 
         mSavingText = (TextView) findViewById(R.id.saving_text);
+        mElecStatusText = (TextView)findViewById(R.id.elec_status_text);
 
         mStructureAway.setOnClickListener(this);
         findViewById(R.id.logout_button).setOnClickListener(this);
@@ -371,6 +373,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         mSingleControlContainer.setVisibility(singleControlVisibility);
         mRangeControlContainer.setVisibility(rangeControlVisibility);
+        mElecStatusText.setText("Electricity Status: "+ Energy.currElecStatus());
     }
 
     private void updateRangeControlView() {

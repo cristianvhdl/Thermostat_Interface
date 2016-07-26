@@ -14,9 +14,9 @@ public class Energy {
     public static double COOLING_POWER = 3.5f;    // kW for cooling
 
     // Time-of-Use Rates cents per kWh, weekends and holidays are off-peak all day
-    public static double ELEC_ON_PEAK = 18f;    // 11 am - 4 pm
-    public double ELEC_MID_PEAK = 13.2f; // 7-10 am & 5-6 pm
-    public double ELEC_OFF_PEAK = 8.7f;  // 7pm - 6am
+    public static final double ELEC_ON_PEAK = 18f;    // 11 am - 4 pm
+    public static final double ELEC_MID_PEAK = 13.2f; // 7-10 am & 5-6 pm
+    public static final double ELEC_OFF_PEAK = 8.7f;  // 7pm - 6am
 
     // how many minutes it takes to reach target temperature
     public static double timeToTemp(double currTempC, double tarTempC, boolean cooling){
@@ -31,16 +31,43 @@ public class Energy {
     // how much cents it takes to reach target temperature
     // TODO: 6/12/2016, update this method so that it reflects real time hydro price
     public static double centsToTemp(double currTempC, double tarTempC, boolean cooling){
-        // Time
-        Calendar c = Calendar.getInstance();
-        int seconds = c.get(Calendar.SECOND);
 
+        double elec_price = currElecPrice();
         if(cooling){
             Log.v("Energy", "Need "+ timeToTemp(currTempC, tarTempC, cooling)/60 + "hours to reach "+tarTempC +" C");
-            return timeToTemp(currTempC, tarTempC, cooling)/60 * COOLING_POWER * ELEC_ON_PEAK;
+            return timeToTemp(currTempC, tarTempC, cooling)/60 * COOLING_POWER * elec_price;
         }else{
             Log.v("Energy", "Need "+ timeToTemp(currTempC, tarTempC, cooling)/60 + "hours to reach "+tarTempC +" C");
-            return timeToTemp(currTempC, tarTempC, cooling)/60 * HEATING_POWER * ELEC_ON_PEAK;
+            return timeToTemp(currTempC, tarTempC, cooling)/60 * HEATING_POWER * elec_price;
         }
+    }
+
+    public static String currElecStatus(){
+        String status = "OFF PEAK";
+        // Time
+        Calendar c = Calendar.getInstance();
+        int Hr24=c.get(Calendar.HOUR_OF_DAY);
+
+        if(Hr24 >= 11 && Hr24 <= 16){
+            status = "ON PEAK";
+        }else if( (Hr24 >= 7 && Hr24 <= 10) || (Hr24 >= 5 && Hr24 <= 6)){
+            status = "MID PEAK";
+        }
+        Log.v("Energy", "Current Electricity: "+status);
+
+        return status;
+    }
+
+    public static double currElecPrice(){
+        double price = ELEC_OFF_PEAK;   //default price
+
+        String status = currElecStatus();
+        if(status.equals("ON PEAK"))
+            price = ELEC_ON_PEAK;
+        else if(status.equals("MID PEAK"))
+            price = ELEC_MID_PEAK;
+
+        Log.v("Energy", "Current Price is "+price);
+        return price;
     }
 }
