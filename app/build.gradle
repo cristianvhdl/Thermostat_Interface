@@ -33,6 +33,7 @@ dependencies {
     compile 'com.github.Triggertrap:SeekArc:v1.1'        // Circular Seekbar
     compile 'com.google.firebase:firebase-core:9.2.1'   // Firebase
     compile 'com.google.firebase:firebase-auth:9.2.1'   // Firebase Authentication
+    compile 'com.google.firebase:firebase-database:9.2.1'   // Firebase Realtime Database
 }
 
 apply plugin: 'com.google.gms.google-services' // Firebase

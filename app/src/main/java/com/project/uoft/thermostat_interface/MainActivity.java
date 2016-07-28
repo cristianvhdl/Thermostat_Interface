@@ -76,10 +76,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private Drawable default_btn_bg;
     private TextView mElecStatusText;
 
-    // Auth
-    private FirebaseAuth mAuth;
-    private FirebaseAuth.AuthStateListener mAuthListener;
-    private boolean isSignedIn = false;
+    //Database Auth
+    private Auth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,79 +128,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
             mNest.launchAuthFlow(this, AUTH_TOKEN_REQUEST_CODE);
         }
 
+        mAuth = new Auth();
+        mAuth.initialize();
+
         if (savedInstanceState != null) {
             Log.v(TAG, "savedInstanceState != null");
             mThermostat = savedInstanceState.getParcelable(THERMOSTAT_KEY);
             mStructure = savedInstanceState.getParcelable(STRUCTURE_KEY);
             updateViews();
         }
-
-        // Firebase Database Auth
-        mAuth = FirebaseAuth.getInstance();
-        mAuthListener = new FirebaseAuth.AuthStateListener(){
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth){
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if(user != null){
-                    isSignedIn = true;
-                    Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-                }else{
-                    isSignedIn = false;
-                    Log.d(TAG, "onAuthStateChanged: signed_out");
-                }
-
-            }
-        };
-
     }
 
-    private void signIn() {
-        if(mThermostat == null || mStructure == null) {
-            Log.e(TAG, "SignIn: mThermostat or mStructure == null");
-            return;
-        }
-        final String email = mStructure.getStructureId()+"@user.com";
-        final String password = mThermostat.getDeviceId();
-        Log.d(TAG,"Signing In!!");
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        Log.d(TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
 
-                        // If sign in fails, display a message to the user. If sign in succeeds
-                        // the auth state listener will be notified and logic to handle the
-                        // signed in user can be handled in the listener.
-                        if (!task.isSuccessful()) {
-                            Log.w(TAG, "signInWithEmail:failed"+task.getException(), task.getException());
-                            Toast.makeText(MainActivity.this, R.string.auth_firebase_failed,
-                                    Toast.LENGTH_SHORT).show();
-                            if(task.getException() instanceof FirebaseAuthInvalidUserException){
-                                signUp(email, password);
-                            }
-                        }
-
-                        // ...
-                    }
-                });
-    }
-
-    private void signUp(String email, String password){
-        mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        Log.d(TAG, "createUserWithEmail:onComplete:" + task.isSuccessful());
-
-                        if (!task.isSuccessful()) {
-                            Toast.makeText(MainActivity.this, R.string.auth_firebase_failed,
-                                    Toast.LENGTH_SHORT).show();
-                        }else{
-                            signIn();
-                        }
-                    }
-                });
-    }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -230,7 +167,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     public void onStart(){
         super.onStart();
-        mAuth.addAuthStateListener(mAuthListener);
+        //add auth listener
+        mAuth.addAuthListener();
     }
 
     @Override
@@ -238,10 +176,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         Log.d(TAG, "onStop");
         super.onStop();
         mNest.removeAllListeners();
-        if(mAuthListener != null){
-            mAuth.removeAuthStateListener(mAuthListener);
-        }
-        mAuth.signOut();
+        mAuth.removeAuthListener();
     }
 
     @Override
@@ -371,9 +306,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
             public void onUpdate(@NonNull GlobalUpdate update) {
                 mThermostat = update.getThermostats().get(0);
                 mStructure = update.getStructures().get(0);
-                if(!isSignedIn){
+                if(!mAuth.isSignedIn){
                     Log.d(TAG, "GlobalListener: onUpdate: User is not signed in, signing in");
-                    signIn();
+                    mAuth.signIn(mThermostat,mStructure);
                 }
                 updateViews();
             }
