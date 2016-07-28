@@ -12,4 +12,5 @@
     <string name="curr_temp">Current temp:</string>
     <string name="decrease_temp">-</string>
     <string name="increase_temp">+</string>
+    <string name="auth_firebase_failed">Firebase User Auth Failed</string>
 </resources>

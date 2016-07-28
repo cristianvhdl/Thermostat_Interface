@@ -21,6 +21,12 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthInvalidUserException;
+import com.google.firebase.auth.FirebaseUser;
 import com.nestlabs.sdk.Callback;
 import com.nestlabs.sdk.GlobalUpdate;
 import com.nestlabs.sdk.NestAPI;
@@ -29,6 +35,8 @@ import com.nestlabs.sdk.NestListener;
 import com.nestlabs.sdk.NestToken;
 import com.nestlabs.sdk.Structure;
 import com.nestlabs.sdk.Thermostat;
+
+import java.util.ArrayList;
 
 public class MainActivity extends Activity implements View.OnClickListener {
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -68,6 +76,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private Drawable default_btn_bg;
     private TextView mElecStatusText;
 
+    // Auth
+    private FirebaseAuth mAuth;
+    private FirebaseAuth.AuthStateListener mAuthListener;
+    private boolean isSignedIn = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,10 +115,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
         findViewById(R.id.temp_cool_down).setOnClickListener(this);
         findViewById(R.id.temp_heat_up).setOnClickListener(this);
         findViewById(R.id.temp_heat_down).setOnClickListener(this);
-
         findViewById(R.id.coin_img).setOnClickListener(this);
 
         NestAPI.setAndroidContext(this);
+
+        // Nest Auth
         mNest = NestAPI.getInstance();
         mToken = Settings.loadAuthToken(this);
 
@@ -117,10 +131,77 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
 
         if (savedInstanceState != null) {
+            Log.v(TAG, "savedInstanceState != null");
             mThermostat = savedInstanceState.getParcelable(THERMOSTAT_KEY);
             mStructure = savedInstanceState.getParcelable(STRUCTURE_KEY);
             updateViews();
         }
+
+        // Firebase Database Auth
+        mAuth = FirebaseAuth.getInstance();
+        mAuthListener = new FirebaseAuth.AuthStateListener(){
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth){
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if(user != null){
+                    isSignedIn = true;
+                    Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+                }else{
+                    isSignedIn = false;
+                    Log.d(TAG, "onAuthStateChanged: signed_out");
+                }
+
+            }
+        };
+
+    }
+
+    private void signIn() {
+        if(mThermostat == null || mStructure == null) {
+            Log.e(TAG, "SignIn: mThermostat or mStructure == null");
+            return;
+        }
+        final String email = mStructure.getStructureId()+"@user.com";
+        final String password = mThermostat.getDeviceId();
+        Log.d(TAG,"Signing In!!");
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        Log.d(TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
+
+                        // If sign in fails, display a message to the user. If sign in succeeds
+                        // the auth state listener will be notified and logic to handle the
+                        // signed in user can be handled in the listener.
+                        if (!task.isSuccessful()) {
+                            Log.w(TAG, "signInWithEmail:failed"+task.getException(), task.getException());
+                            Toast.makeText(MainActivity.this, R.string.auth_firebase_failed,
+                                    Toast.LENGTH_SHORT).show();
+                            if(task.getException() instanceof FirebaseAuthInvalidUserException){
+                                signUp(email, password);
+                            }
+                        }
+
+                        // ...
+                    }
+                });
+    }
+
+    private void signUp(String email, String password){
+        mAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        Log.d(TAG, "createUserWithEmail:onComplete:" + task.isSuccessful());
+
+                        if (!task.isSuccessful()) {
+                            Toast.makeText(MainActivity.this, R.string.auth_firebase_failed,
+                                    Toast.LENGTH_SHORT).show();
+                        }else{
+                            signIn();
+                        }
+                    }
+                });
     }
 
     @Override
@@ -147,10 +228,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     @Override
+    public void onStart(){
+        super.onStart();
+        mAuth.addAuthStateListener(mAuthListener);
+    }
+
+    @Override
     protected void onStop() {
         Log.d(TAG, "onStop");
         super.onStop();
         mNest.removeAllListeners();
+        if(mAuthListener != null){
+            mAuth.removeAuthStateListener(mAuthListener);
+        }
+        mAuth.signOut();
     }
 
     @Override
@@ -164,6 +255,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         String awayState = mStructure.getAway();
 //        double temp = mThermostat.getTargetTemperatureC();
 //        double init_temp = mThermostat.getTargetTemperatureC();
+        Log.d(TAG, "structure ID: "+mStructure.getStructureId());
+        Log.d(TAG, "thermostates: "+mStructure.getThermostats());
 
         switch (v.getId()) {
             case R.id.coin_img:
@@ -278,6 +371,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
             public void onUpdate(@NonNull GlobalUpdate update) {
                 mThermostat = update.getThermostats().get(0);
                 mStructure = update.getStructures().get(0);
+                if(!isSignedIn){
+                    Log.d(TAG, "GlobalListener: onUpdate: User is not signed in, signing in");
+                    signIn();
+                }
                 updateViews();
             }
         });
@@ -447,7 +544,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             init_target_temp = ambient_temp;
 
         if(!isOff || display_temp == ambient_temp) {  // while the HVAC is ON, the saving will be updated
-            Log.e(TAG, "Update Saving");
+            Log.v(TAG, "Update Saving");
             double saving = Energy.centsToTemp(mThermostat.getAmbientTemperatureC(), init_target_temp, KEY_COOL.equals(mode))
                     - Energy.centsToTemp(mThermostat.getAmbientTemperatureC(), display_temp, KEY_COOL.equals(mode));
             mSavingText.setText("¢ "+String.format("%.0f", saving));

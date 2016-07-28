@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "863657729235",
+    "firebase_url": "https://thermostat-interface.firebaseio.com",
+    "project_id": "thermostat-interface",
+    "storage_bucket": "thermostat-interface.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:863657729235:android:880d4df3b3c83cd3",
+        "android_client_info": {
+          "package_name": "com.project.uoft.thermostat_interface"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "863657729235-la1p8epbsqcra88ft31kidrjuo6l301e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtLVtIQLIdCPvCesuD1Radqnrztr0AtD4"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
