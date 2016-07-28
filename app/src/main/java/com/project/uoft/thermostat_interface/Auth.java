@@ -2,7 +2,6 @@ package com.project.uoft.thermostat_interface;
 
 import android.support.annotation.NonNull;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -20,12 +19,12 @@ import java.util.concurrent.Executor;
  */
 public class Auth implements Executor {
     private static final String TAG = Auth.class.getSimpleName();
-    private static FirebaseAuth mAuth;
+    private static FirebaseAuth firebaseAuth;
     private static FirebaseAuth.AuthStateListener mAuthListener;
     public boolean isSignedIn = false;
 
     public void initialize(){
-        mAuth = FirebaseAuth.getInstance();
+        firebaseAuth = FirebaseAuth.getInstance();
         mAuthListener = new FirebaseAuth.AuthStateListener(){
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth){
@@ -43,14 +42,14 @@ public class Auth implements Executor {
     }
 
     public void addAuthListener(){
-        mAuth.addAuthStateListener(mAuthListener);
+        firebaseAuth.addAuthStateListener(mAuthListener);
     }
 
     public void removeAuthListener(){
         if(mAuthListener != null){
-            mAuth.removeAuthStateListener(mAuthListener);
+            firebaseAuth.removeAuthStateListener(mAuthListener);
         }
-        mAuth.signOut();
+        firebaseAuth.signOut();
     }
 
     public void signIn(Thermostat mThermostat, Structure mStructure) {
@@ -61,7 +60,7 @@ public class Auth implements Executor {
         final String email = mStructure.getStructureId()+"@user.com";
         final String password = mThermostat.getDeviceId();
         Log.d(TAG,"Signing In");
-        mAuth.signInWithEmailAndPassword(email, password)
+        firebaseAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
@@ -78,7 +77,7 @@ public class Auth implements Executor {
     }
 
     private void signUp(String email, String password){
-        mAuth.createUserWithEmailAndPassword(email, password)
+        firebaseAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
