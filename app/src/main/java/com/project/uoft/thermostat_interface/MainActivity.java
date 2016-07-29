@@ -77,7 +77,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private TextView mElecStatusText;
 
     //Database Auth
-    private Auth mAuth;
+//    private Auth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,10 +116,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
         findViewById(R.id.coin_img).setOnClickListener(this);
 
         NestAPI.setAndroidContext(this);
+        mNest = NestAPI.getInstance();
 
         // Nest Auth
-        mNest = NestAPI.getInstance();
-        mToken = Settings.loadAuthToken(this);
+        mToken = Auth.loadAuthToken(this);
 
         if (mToken != null) {
             authenticate(mToken);
@@ -128,8 +128,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
             mNest.launchAuthFlow(this, AUTH_TOKEN_REQUEST_CODE);
         }
 
-        mAuth = new Auth();
-        mAuth.initialize();
+//        mAuth = new Auth();
+        Auth.initialize();
 
         if (savedInstanceState != null) {
             Log.v(TAG, "savedInstanceState != null");
@@ -138,8 +138,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
             updateViews();
         }
     }
-
-
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -157,7 +155,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         mToken = NestAPI.getAccessTokenFromIntent(intent);
         if (mToken != null) {
-            Settings.saveAuthToken(this, mToken);
+            Auth.saveAuthToken(this, mToken);
             authenticate(mToken);
         } else {
             Log.e(TAG, "Unable to resolve access token from payload.");
@@ -167,8 +165,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     public void onStart(){
         super.onStart();
-        //add auth listener
-        mAuth.addAuthListener();
+        Auth.addAuthListener();
+        fetchData();
     }
 
     @Override
@@ -176,7 +174,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         Log.d(TAG, "onStop");
         super.onStop();
         mNest.removeAllListeners();
-        mAuth.removeAuthListener();
+        Auth.removeAuthListener();
+        Auth.signOut();
     }
 
     @Override
@@ -190,8 +189,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
         String awayState = mStructure.getAway();
 //        double temp = mThermostat.getTargetTemperatureC();
 //        double init_temp = mThermostat.getTargetTemperatureC();
-        Log.d(TAG, "structure ID: "+mStructure.getStructureId());
-        Log.d(TAG, "thermostates: "+mStructure.getThermostats());
 
         switch (v.getId()) {
             case R.id.coin_img:
@@ -260,7 +257,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 });
                 break;
             case R.id.logout_button:
-                Settings.saveAuthToken(this, null);
+                Auth.saveAuthToken(this, null);
                 mNest.launchAuthFlow(this, AUTH_TOKEN_REQUEST_CODE);
                 break;
         }
@@ -284,14 +281,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
             @Override
             public void onAuthFailure(NestException exception) {
                 Log.e(TAG, "Authentication failed with error: " + exception.getMessage());
-                Settings.saveAuthToken(mActivity, null);
+                Auth.saveAuthToken(mActivity, null);
                 mNest.launchAuthFlow(mActivity, AUTH_TOKEN_REQUEST_CODE);
             }
 
             @Override
             public void onAuthRevoked() {
                 Log.e(TAG, "Auth token was revoked!");
-                Settings.saveAuthToken(mActivity, null);
+                Auth.saveAuthToken(mActivity, null);
                 mNest.launchAuthFlow(mActivity, AUTH_TOKEN_REQUEST_CODE);
             }
         });
@@ -306,9 +303,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
             public void onUpdate(@NonNull GlobalUpdate update) {
                 mThermostat = update.getThermostats().get(0);
                 mStructure = update.getStructures().get(0);
-                if(!mAuth.isSignedIn){
+                if(!Auth.isSignedIn){
                     Log.d(TAG, "GlobalListener: onUpdate: User is not signed in, signing in");
-                    mAuth.signIn(mThermostat,mStructure);
+                    Auth.signIn(mThermostat,mStructure);
                 }
                 updateViews();
             }
