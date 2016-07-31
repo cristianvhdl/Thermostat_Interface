@@ -18,7 +18,7 @@ import com.nestlabs.sdk.Thermostat;
 import java.util.concurrent.Executor;
 
 /**
- * Created by Lenovo on 7/28/2016.
+ToDo: add comments
  */
 public class Auth implements Executor {
     private static final String TOKEN_KEY = "token";
@@ -42,7 +42,6 @@ public class Auth implements Executor {
                     isSignedIn = false;
                     Log.d(TAG, "onAuthStateChanged: signed_out");
                 }
-
             }
         };
     }
@@ -104,7 +103,7 @@ public class Auth implements Executor {
         getPrefs(context).edit()
                 .putString(TOKEN_KEY, token.getToken())
                 .putLong(EXPIRATION_KEY, token.getExpiresIn())
-                .commit();
+                .apply();   // or .commit()
     }
 
     public static NestToken loadAuthToken(Context context) {

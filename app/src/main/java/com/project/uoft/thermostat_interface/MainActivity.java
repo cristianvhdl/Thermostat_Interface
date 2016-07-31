@@ -76,15 +76,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private Drawable default_btn_bg;
     private TextView mElecStatusText;
 
-    //Database Auth
-//    private Auth mAuth;
+    //Database
+    private Database mDB;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mActivity = this;
 
+        // Initialization
+        mActivity = this;
         mThermostatView = findViewById(R.id.thermostat_view);
         mSingleControlContainer = findViewById(R.id.single_control);
         mCurrentTempText = (TextView) findViewById(R.id.current_temp);
@@ -118,8 +119,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
         NestAPI.setAndroidContext(this);
         mNest = NestAPI.getInstance();
 
-        // Nest Auth
+        // Authentication
         mToken = Auth.loadAuthToken(this);
+        Auth.initialize();
 
         if (mToken != null) {
             authenticate(mToken);
@@ -128,15 +130,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
             mNest.launchAuthFlow(this, AUTH_TOKEN_REQUEST_CODE);
         }
 
-//        mAuth = new Auth();
-        Auth.initialize();
-
+        //
         if (savedInstanceState != null) {
             Log.v(TAG, "savedInstanceState != null");
             mThermostat = savedInstanceState.getParcelable(THERMOSTAT_KEY);
             mStructure = savedInstanceState.getParcelable(STRUCTURE_KEY);
             updateViews();
         }
+
+        // Database
+        mDB = new Database();
+        mDB.helloWorld();
+        mDB.writeNewAction("4:32", 21.0,24.0,28.0);
     }
 
     @Override
