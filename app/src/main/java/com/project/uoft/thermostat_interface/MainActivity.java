@@ -37,6 +37,7 @@ import com.nestlabs.sdk.Structure;
 import com.nestlabs.sdk.Thermostat;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 public class MainActivity extends Activity implements View.OnClickListener {
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -75,6 +76,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private double display_temp;
     private Drawable default_btn_bg;
     private TextView mElecStatusText;
+
+    // Auth
+//    private String UID;
 
     //Database
     private Database mDB;
@@ -141,7 +145,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         // Database
         mDB = new Database();
         mDB.helloWorld();
-        mDB.writeNewAction("4:32", 21.0,24.0,28.0);
+//        mDB.writeNewAction("4:32", 21.0,24.0,28.0);
     }
 
     @Override
@@ -197,10 +201,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         switch (v.getId()) {
             case R.id.coin_img:
+                Log.d(TAG, "Clicked Coin");
 //                mSavingText.setText("¢" + 0);
                 mNest.thermostats.setTargetTemperatureC(mThermostat.getDeviceId(), display_temp);
 //                Toast.makeText(getApplicationContext(), "Save!!", Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "Clicked Coin");
+                Date timeStamp = new Date();
+                Action newAction = new Action(mThermostat.getTargetTemperatureC(), display_temp, mThermostat.getAmbientTemperatureC());
+                String UID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                Database.writeNewAction(UID, timeStamp, newAction);
                 break;
             case R.id.temp_up:
                 if(display_temp < 32)

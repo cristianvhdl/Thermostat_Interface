@@ -85,12 +85,17 @@ public class Auth implements Executor {
                 });
     }
 
-    private static void signUp(String email, String password){
+    private static void signUp(final String email, String password){
         firebaseAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         Log.d(TAG, "createUserWithEmail:onComplete:" + task.isSuccessful());
+                        if(task.isSuccessful()){
+                            FirebaseUser user = firebaseAuth.getCurrentUser();
+                            User newUser = new User(email);
+                            Database.writeNewUser(user.getUid(), newUser);
+                        }
                     }
                 });
     }
