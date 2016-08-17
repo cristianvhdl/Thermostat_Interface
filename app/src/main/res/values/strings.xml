@@ -9,7 +9,7 @@
     <string name="away_state_away">Away</string>
     <string name="away_state_auto_away">Auto Away</string>
     <string name="ellipsis">…</string>
-    <string name="curr_temp">Current temp:</string>
+    <string name="curr_temp">Room Temperature:</string>
     <string name="decrease_temp">-</string>
     <string name="increase_temp">+</string>
     <string name="auth_firebase_failed">Firebase User Auth Failed</string>

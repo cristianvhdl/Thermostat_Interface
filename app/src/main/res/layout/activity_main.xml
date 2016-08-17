@@ -28,35 +28,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/structure_name" />
-
-    <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/thermostat_view"
-        android:layout_alignParentRight="true"
-        >
-        <!--android:layout_centerHorizontal="true"-->
-
-        <ImageView
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:id="@+id/coin_img"
-            android:src="@drawable/coin" />
-        <TextView
-            android:id="@+id/saving_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/coin_img"
-            android:layout_alignTop="@+id/coin_img"
-            android:layout_alignRight="@+id/coin_img"
-            android:layout_alignBottom="@+id/coin_img"
-            android:layout_margin="1dp"
-            android:gravity="center"
-            android:text=""
-            android:textColor="#000000" />
-    </RelativeLayout>
+        android:layout_alignParentStart="true"/>
+        <!--android:layout_below="@+id/structure_name" />-->
 
     <TextView
         android:id="@+id/ambient_temp"
@@ -91,15 +64,41 @@
         android:textStyle="bold" />
 
     <RelativeLayout
-        android:id="@+id/thermostat_view"
-        android:layout_width="@dimen/thermostat_radius"
-        android:layout_height="@dimen/thermostat_radius"
-        android:layout_centerInParent="true"
-        android:background="@drawable/heat_thermostat_drawable">
+        android:layout_width="@dimen/thermostat_view_width"
+        android:layout_height="@dimen/thermostat_view_height"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:layout_centerInParent="true">
 
+        <RelativeLayout
+            android:id="@+id/thermostat_view"
+            android:layout_width="@dimen/thermostat_radius"
+            android:layout_height="@dimen/thermostat_radius"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
 
-        <include layout="@layout/single_control_layout" />
-        <include layout="@layout/range_control_layout" />
+            android:background="@drawable/heat_thermostat_drawable">
+
+            <include layout="@layout/single_control_layout" />
+            <include layout="@layout/range_control_layout" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/coin_view"
+            android:layout_width="@dimen/coin_radius"
+            android:layout_height="@dimen/coin_radius"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true">
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/coin_img"
+                android:src="@drawable/coin" />
+
+            <include layout="@layout/coin_layout"/>
+
+        </RelativeLayout>
     </RelativeLayout>
 
     <LinearLayout
@@ -135,17 +134,17 @@
             android:text="Off" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/hvac_mode_control_container"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:paddingLeft="5dp"
-        android:text="Thermostat mode:"
-        android:textSize="18dp"
-        android:textStyle="bold" />
+    <!--<TextView-->
+        <!--android:id="@+id/textView2"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_above="@+id/hvac_mode_control_container"-->
+        <!--android:layout_alignParentLeft="true"-->
+        <!--android:layout_alignParentStart="true"-->
+        <!--android:paddingLeft="5dp"-->
+        <!--android:text="Thermostat mode:"-->
+        <!--android:textSize="18dp"-->
+        <!--android:textStyle="bold" />-->
     <Button
         android:id="@+id/logout_button"
         android:layout_width="0dp"
@@ -163,5 +162,15 @@
         android:text="Electricity Status: ..."
         android:textSize="15dp"
         />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="10dp"
+        android:text="CONFIRM"
+        android:id="@+id/confirm_btn"
+        android:layout_above="@+id/hvac_mode_control_container"
+        android:layout_alignRight="@+id/hvac_mode_control_container"
+        android:layout_alignEnd="@+id/hvac_mode_control_container" />
 
 </RelativeLayout>

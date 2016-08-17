@@ -29,17 +29,37 @@ public class Energy {
     }
 
     // how much cents it takes to reach target temperature
-    // TODO: 6/12/2016, update this method so that it reflects real time hydro price
-    public static double centsToTemp(double currTempC, double tarTempC, boolean cooling){
-
+    public static double tempToCents(double currTempC, double tarTempC, boolean cooling){
         double elec_price = currElecPrice();
+        double power;
         if(cooling){
-            Log.v("Energy", "Need "+ timeToTemp(currTempC, tarTempC, cooling)/60 + "hours to reach "+tarTempC +" C");
-            return timeToTemp(currTempC, tarTempC, cooling)/60 * COOLING_POWER * elec_price;
+            power = COOLING_POWER;
         }else{
-            Log.v("Energy", "Need "+ timeToTemp(currTempC, tarTempC, cooling)/60 + "hours to reach "+tarTempC +" C");
-            return timeToTemp(currTempC, tarTempC, cooling)/60 * HEATING_POWER * elec_price;
+            power = HEATING_POWER;
         }
+
+        Log.v("Energy", "Need "+ timeToTemp(currTempC, tarTempC, cooling)/60 + "hours to reach "+tarTempC +" C");
+        return timeToTemp(currTempC, tarTempC, cooling)/60 * power * elec_price;
+    }
+
+
+    // how much can a given saving amount change the target temperature
+    public static double centsToTemp(double cents, double ambientTempC, boolean cooling){
+        double elec_price = currElecPrice();
+        double power, rate, duration, tempDiff;
+
+        if(cooling){
+            power = COOLING_POWER;
+            rate = COOLING_RATE;
+        }else{
+            power = HEATING_POWER;
+            rate = HEATING_RATE * -1;
+        }
+
+        duration = cents/(elec_price*power)*60;
+        tempDiff = duration*rate;
+
+        return tempDiff;
     }
 
     public static String currElecStatus(){

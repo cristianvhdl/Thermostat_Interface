@@ -9,24 +9,10 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthInvalidUserException;
-import com.google.firebase.auth.FirebaseUser;
 import com.nestlabs.sdk.Callback;
 import com.nestlabs.sdk.GlobalUpdate;
 import com.nestlabs.sdk.NestAPI;
@@ -36,7 +22,6 @@ import com.nestlabs.sdk.NestToken;
 import com.nestlabs.sdk.Structure;
 import com.nestlabs.sdk.Thermostat;
 
-import java.util.ArrayList;
 import java.util.Date;
 
 public class MainActivity extends Activity implements View.OnClickListener {
@@ -72,7 +57,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private Structure mStructure;
     private Activity mActivity;
 
+    private View mCoinView;
     private TextView mSavingText;
+    private TextView mSavingUp;
+    private TextView mSavingDown;
+    private TextView mTempUp;
+    private TextView mTempDown;
     private double display_temp;
     private Drawable default_btn_bg;
     private TextView mElecStatusText;
@@ -100,10 +90,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mCurrentCoolTempText = (TextView) findViewById(R.id.current_cool_temp);
         mCurrentHeatTempText = (TextView) findViewById(R.id.current_heat_temp);
 
+        mCoinView = findViewById(R.id.coin_view);
         mSavingText = (TextView) findViewById(R.id.saving_text);
+        mSavingUp = (TextView)findViewById(R.id.saving_up);
+        mSavingDown = (TextView)findViewById(R.id.saving_down);
         mElecStatusText = (TextView)findViewById(R.id.elec_status_text);
+        mTempUp = (TextView) findViewById(R.id.temp_up);
+        mTempDown = (TextView) findViewById(R.id.temp_down);
 
         mStructureAway.setOnClickListener(this);
+
         findViewById(R.id.logout_button).setOnClickListener(this);
         findViewById(R.id.heat).setOnClickListener(this);
         findViewById(R.id.cool).setOnClickListener(this);
@@ -118,7 +114,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
         findViewById(R.id.temp_cool_down).setOnClickListener(this);
         findViewById(R.id.temp_heat_up).setOnClickListener(this);
         findViewById(R.id.temp_heat_down).setOnClickListener(this);
+        findViewById(R.id.thermostat_view).setOnClickListener(this);
+        findViewById(R.id.confirm_btn).setOnClickListener(this);
+
         findViewById(R.id.coin_img).setOnClickListener(this);
+        findViewById(R.id.saving_up).setOnClickListener(this);
+        findViewById(R.id.saving_down).setOnClickListener(this);
 
         NestAPI.setAndroidContext(this);
         mNest = NestAPI.getInstance();
@@ -144,7 +145,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         // Database
         mDB = new Database();
-        mDB.helloWorld();
+//        mDB.helloWorld();
 //        mDB.writeNewAction("4:32", 21.0,24.0,28.0);
     }
 
@@ -196,32 +197,92 @@ public class MainActivity extends Activity implements View.OnClickListener {
         String thermostatID = mThermostat.getDeviceId();
         String mode = mThermostat.getHvacMode();
         String awayState = mStructure.getAway();
-//        double temp = mThermostat.getTargetTemperatureC();
-//        double init_temp = mThermostat.getTargetTemperatureC();
+        double init_temp = mThermostat.getTargetTemperatureC();
+        int coinRadius, savingTextSize, thermRadius, tempTextSize;
+
+        double targetC = display_temp;
+        double ambientC = mThermostat.getAmbientTemperatureC();
+        double tempDiffC = targetC - ambientC;
+        boolean isHeating = KEY_HEAT.equals(mode) && tempDiffC > 0;
+        boolean isCooling = KEY_COOL.equals(mode) && tempDiffC < 0;
 
         switch (v.getId()) {
             case R.id.coin_img:
                 Log.d(TAG, "Clicked Coin");
+                coinRadius = (int) (getResources().getDimension(R.dimen.thermostat_radius));
+                savingTextSize = (int) (getResources().getDimension(R.dimen.coin_text_size_big)/ getResources().getDisplayMetrics().density);
+                thermRadius = (int) (getResources().getDimension(R.dimen.coin_radius));
+                tempTextSize = (int) (getResources().getDimension(R.dimen.coin_text_size_normal)/ getResources().getDisplayMetrics().density);
+
+                mCoinView.requestLayout();
+                mCoinView.getLayoutParams().height = coinRadius;
+                mCoinView.getLayoutParams().width = coinRadius;
+                mSavingUp.setVisibility(View.VISIBLE);
+                mSavingDown.setVisibility(View.VISIBLE);
+                mSavingText.setTextSize(savingTextSize);
+
+                mThermostatView.requestLayout();
+                mThermostatView.getLayoutParams().height = thermRadius;
+                mThermostatView.getLayoutParams().width = thermRadius;
+                mTempUp.setVisibility(View.GONE);
+                mTempDown.setVisibility(View.GONE);
+                mCurrentTempText.setTextSize(tempTextSize);
+
+                break;
+            case R.id.thermostat_view:
+                Log.d(TAG, "Clicked Thermostat");
+                coinRadius = (int) (getResources().getDimension(R.dimen.coin_radius));
+                savingTextSize = (int) (getResources().getDimension(R.dimen.coin_text_size_normal)/ getResources().getDisplayMetrics().density);
+                thermRadius = (int) (getResources().getDimension(R.dimen.thermostat_radius));
+                tempTextSize = (int) (getResources().getDimension(R.dimen.control_temp_size)/ getResources().getDisplayMetrics().density);
+
+                mCoinView.requestLayout();
+                mCoinView.getLayoutParams().height = coinRadius;
+                mCoinView.getLayoutParams().width = coinRadius;
+                mSavingUp.setVisibility(View.GONE);
+                mSavingDown.setVisibility(View.GONE);
+                mSavingText.setTextSize(savingTextSize);
+
+                mThermostatView.requestLayout();
+                mThermostatView.getLayoutParams().height = thermRadius;
+                mThermostatView.getLayoutParams().width = thermRadius;
+                mTempUp.setVisibility(View.VISIBLE);
+                mTempDown.setVisibility(View.VISIBLE);
+                mCurrentTempText.setTextSize(tempTextSize);
+                break;
+            case R.id.confirm_btn:
+                Log.d(TAG, "Clicked Confirm");
 //                mSavingText.setText("¢" + 0);
-                mNest.thermostats.setTargetTemperatureC(mThermostat.getDeviceId(), display_temp);
-//                Toast.makeText(getApplicationContext(), "Save!!", Toast.LENGTH_SHORT).show();
-                Date timeStamp = new Date();
-                Action newAction = new Action(mThermostat.getTargetTemperatureC(), display_temp, mThermostat.getAmbientTemperatureC());
-                String UID = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                Database.writeNewAction(UID, timeStamp, newAction);
+                if (display_temp != init_temp){ //if target temp is different from initial temperature
+                    mNest.thermostats.setTargetTemperatureC(mThermostat.getDeviceId(), display_temp);
+                    Date timeStamp = new Date();
+                    Action newAction = new Action(mThermostat.getTargetTemperatureC(), display_temp, mThermostat.getAmbientTemperatureC());
+                    String UID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                    Database.writeNewAction(UID, timeStamp, newAction);
+                }
+                break;
+            case R.id.saving_up:
+                if(display_temp < 32 && (isCooling || KEY_HEAT.equals(mode)))
+                    display_temp+=0.5;
+                updateSingleControlView();
                 break;
             case R.id.temp_up:
                 if(display_temp < 32)
                     display_temp+=0.5;
                 updateSingleControlView();
-                mCurrentTempText.setText(String.format(DEG_C, display_temp));
+//                mCurrentTempText.setText(String.format(DEG_C, display_temp));
 //                mNest.thermostats.setTargetTemperatureC(mThermostat.getDeviceId(), temp);
+                break;
+            case R.id.saving_down:
+                if(display_temp > 9 && (isHeating || KEY_COOL.equals(mode)))
+                    display_temp-=0.5;
+                updateSingleControlView();
                 break;
             case R.id.temp_down:
                 if(display_temp > 9)
                     display_temp-=0.5;
                 updateSingleControlView();
-                mCurrentTempText.setText(String.format(DEG_C, display_temp));
+//                mCurrentTempText.setText(String.format(DEG_C, display_temp));
 //                mNest.thermostats.setTargetTemperatureC(mThermostat.getDeviceId(), temp);
                 break;
             case R.id.temp_heat_up:
@@ -490,8 +551,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         if(!isOff || display_temp == ambient_temp) {  // while the HVAC is ON, the saving will be updated
             Log.v(TAG, "Update Saving");
-            double saving = Energy.centsToTemp(mThermostat.getAmbientTemperatureC(), init_target_temp, KEY_COOL.equals(mode))
-                    - Energy.centsToTemp(mThermostat.getAmbientTemperatureC(), display_temp, KEY_COOL.equals(mode));
+            double saving = Energy.tempToCents(mThermostat.getAmbientTemperatureC(), init_target_temp, KEY_COOL.equals(mode))
+                    - Energy.tempToCents(mThermostat.getAmbientTemperatureC(), display_temp, KEY_COOL.equals(mode));
             mSavingText.setText("¢ "+String.format("%.0f", saving));
         }
 
