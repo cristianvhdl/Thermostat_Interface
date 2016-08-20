@@ -1,15 +1,22 @@
 package com.project.uoft.thermostat_interface;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.ClipDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
-import android.widget.RelativeLayout;
+import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -21,6 +28,7 @@ import com.nestlabs.sdk.NestListener;
 import com.nestlabs.sdk.NestToken;
 import com.nestlabs.sdk.Structure;
 import com.nestlabs.sdk.Thermostat;
+import com.project.uoft.thermostat_interface.widget.VerticalSeekBar;
 
 import java.util.Date;
 
@@ -35,13 +43,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private static final String KEY_COOL = "cool";
     private static final String KEY_HEAT_COOL = "heat-cool";
     private static final String KEY_OFF = "off";
-    private static final String DEG_F = "%d°F";
-    private static final String DEG_C = "%.1f°C";
+    private static final String DEG_F = "%d°";
+    private static final String DEG_C = "%.1f°";
     private static final String CLIENT_ID = Constants.CLIENT_ID;
     private static final String CLIENT_SECRET = Constants.CLIENT_SECRET;
     private static final String REDIRECT_URL = Constants.REDIRECT_URL;
     private static final int AUTH_TOKEN_REQUEST_CODE = 123;
 
+    private static Context context;
     private TextView mAmbientTempText;
     private View mSingleControlContainer;
     private TextView mCurrentTempText;
@@ -64,8 +73,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private TextView mTempUp;
     private TextView mTempDown;
     private double display_temp;
-    private Drawable default_btn_bg;
+//    private Drawable default_btn_bg;
     private TextView mElecStatusText;
+    private ImageView mCoinStackImg;
+    private ImageView mMercuryImg;
+    private ImageView mThermometerBottom1;
+    private ImageView mThermometerBottom2;
+    private VerticalSeekBar mTempSeekbar;
 
     // Auth
 //    private String UID;
@@ -76,7 +90,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+//        setContentView(R.layout.activity_main);
+        setContentView(R.layout.ui_coin_stack);
+
 
         // Initialization
         mActivity = this;
@@ -98,16 +114,24 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mTempUp = (TextView) findViewById(R.id.temp_up);
         mTempDown = (TextView) findViewById(R.id.temp_down);
 
-        mStructureAway.setOnClickListener(this);
+        mCoinStackImg = (ImageView) findViewById(R.id.coin_stack_img);
+        mMercuryImg = (ImageView)findViewById(R.id.mercury_img);
+        mThermometerBottom1 = (ImageView)findViewById(R.id.bottom1);
+        mThermometerBottom2 = (ImageView)findViewById(R.id.bottom2);
+        mTempSeekbar = (VerticalSeekBar)findViewById(R.id.tempSeekbar);
+        setSeekbarListener();
+        mTempSeekbar.getThumb().mutate().setAlpha(0);
 
+        mStructureAway.setOnClickListener(this);
         findViewById(R.id.logout_button).setOnClickListener(this);
         findViewById(R.id.heat).setOnClickListener(this);
         findViewById(R.id.cool).setOnClickListener(this);
 
         findViewById(R.id.heat_cool).setOnClickListener(this);
         findViewById(R.id.heat_cool).setEnabled(false);
-
         findViewById(R.id.off).setOnClickListener(this);
+        findViewById(R.id.confirm_btn).setOnClickListener(this);
+
         findViewById(R.id.temp_up).setOnClickListener(this);
         findViewById(R.id.temp_down).setOnClickListener(this);
         findViewById(R.id.temp_cool_up).setOnClickListener(this);
@@ -115,11 +139,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
         findViewById(R.id.temp_heat_up).setOnClickListener(this);
         findViewById(R.id.temp_heat_down).setOnClickListener(this);
         findViewById(R.id.thermostat_view).setOnClickListener(this);
-        findViewById(R.id.confirm_btn).setOnClickListener(this);
-
         findViewById(R.id.coin_img).setOnClickListener(this);
         findViewById(R.id.saving_up).setOnClickListener(this);
         findViewById(R.id.saving_down).setOnClickListener(this);
+
+        MainActivity.context=getApplicationContext();
 
         NestAPI.setAndroidContext(this);
         mNest = NestAPI.getInstance();
@@ -145,8 +169,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         // Database
         mDB = new Database();
-//        mDB.helloWorld();
-//        mDB.writeNewAction("4:32", 21.0,24.0,28.0);
+    }
+
+    public static Context getAppContext(){
+        return MainActivity.context;
     }
 
     @Override
@@ -205,6 +231,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         double tempDiffC = targetC - ambientC;
         boolean isHeating = KEY_HEAT.equals(mode) && tempDiffC > 0;
         boolean isCooling = KEY_COOL.equals(mode) && tempDiffC < 0;
+        boolean isAboveAmbient = tempDiffC > 0;
+        boolean isBelowAmbient = tempDiffC < 0;
 
         switch (v.getId()) {
             case R.id.coin_img:
@@ -252,7 +280,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 break;
             case R.id.confirm_btn:
                 Log.d(TAG, "Clicked Confirm");
-//                mSavingText.setText("¢" + 0);
                 if (display_temp != init_temp){ //if target temp is different from initial temperature
                     mNest.thermostats.setTargetTemperatureC(mThermostat.getDeviceId(), display_temp);
                     Date timeStamp = new Date();
@@ -262,28 +289,28 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 }
                 break;
             case R.id.saving_up:
-                if(display_temp < 32 && (isCooling || KEY_HEAT.equals(mode)))
+                if(display_temp < 32 && KEY_COOL.equals(mode) && isCooling)
                     display_temp+=0.5;
+                else if(display_temp > 9 && KEY_HEAT.equals(mode) && isHeating)
+                    display_temp-=0.5;
                 updateSingleControlView();
                 break;
             case R.id.temp_up:
                 if(display_temp < 32)
                     display_temp+=0.5;
                 updateSingleControlView();
-//                mCurrentTempText.setText(String.format(DEG_C, display_temp));
-//                mNest.thermostats.setTargetTemperatureC(mThermostat.getDeviceId(), temp);
                 break;
             case R.id.saving_down:
-                if(display_temp > 9 && (isHeating || KEY_COOL.equals(mode)))
+                if(display_temp > 9 && KEY_COOL.equals(mode))
                     display_temp-=0.5;
+                else if(display_temp < 32 && KEY_HEAT.equals(mode))
+                    display_temp+=0.5;
                 updateSingleControlView();
                 break;
             case R.id.temp_down:
                 if(display_temp > 9)
                     display_temp-=0.5;
                 updateSingleControlView();
-//                mCurrentTempText.setText(String.format(DEG_C, display_temp));
-//                mNest.thermostats.setTargetTemperatureC(mThermostat.getDeviceId(), temp);
                 break;
             case R.id.temp_heat_up:
             case R.id.temp_heat_down:
@@ -421,6 +448,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
 
         display_temp = mThermostat.getTargetTemperatureC();
+        Log.v(TAG,"display_temp="+display_temp);
+        mTempSeekbar.setProgress((int)((display_temp-9)/(32-9)*100));
         updateAmbientTempTextView();
         updateStructureViews();
         updateThermostatViews();
@@ -507,6 +536,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private void updateSingleControlView() {
         int thermDrawable = R.drawable.off_thermostat_drawable;
+        int upColor = Color.WHITE;
+        int downColor = Color.WHITE;
+        int thermometerColor = Color.BLACK;
 //        double targetC= mThermostat.getTargetTemperatureC();
         double targetC = display_temp;
         double ambientC = mThermostat.getAmbientTemperatureC();
@@ -516,6 +548,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         boolean isAway = state.equals(KEY_AWAY) || state.equals(KEY_AUTO_AWAY);
         boolean isHeating = KEY_HEAT.equals(mode) && tempDiffC > 0;
         boolean isCooling = KEY_COOL.equals(mode) && tempDiffC < 0;
+        GradientDrawable shapeBottom1 = (GradientDrawable) mThermometerBottom1.getDrawable();
+        GradientDrawable shapeBottom2 = (GradientDrawable) mThermometerBottom2.getDrawable();
 
         if (isAway) {
             mCurrentTempText.setText(R.string.thermostat_away);
@@ -523,13 +557,26 @@ public class MainActivity extends Activity implements View.OnClickListener {
             return;
         } else if (isHeating) {
             thermDrawable = R.drawable.heat_thermostat_drawable;
+            upColor = Color.RED;
+            downColor = Color.GREEN;
+            thermometerColor = getResources().getColor(R.color.heat);
         } else if (isCooling) {
             thermDrawable = R.drawable.cool_thermostat_drawable;
+            upColor = Color.GREEN;
+            downColor = Color.RED;
+            thermometerColor = getResources().getColor(R.color.cool);
+        }else{
         }
 
         // Update the view.
         mCurrentTempText.setText(String.format(DEG_C, targetC));
         mThermostatView.setBackgroundResource(thermDrawable);
+        mTempUp.setTextColor(upColor);
+        mTempDown.setTextColor(downColor);
+
+        shapeBottom1.setColor(thermometerColor);
+        shapeBottom2.setColor(getResources().getColor(R.color.heat));
+
         updateSaving(!isCooling && !isHeating);
     }
 
@@ -541,6 +588,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         double ambient_temp = mThermostat.getAmbientTemperatureC();
         double init_target_temp = mThermostat.getTargetTemperatureC();
         double temp_diff = init_target_temp - display_temp;    // cooling -> negative: saving, heating -> positive: saving
+        double ambientC = mThermostat.getAmbientTemperatureC();
         if(temp_diff == 0)
             mSavingText.setText("¢ "+0);
 
@@ -551,10 +599,37 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         if(!isOff || display_temp == ambient_temp) {  // while the HVAC is ON, the saving will be updated
             Log.v(TAG, "Update Saving");
-            double saving = Energy.tempToCents(mThermostat.getAmbientTemperatureC(), init_target_temp, KEY_COOL.equals(mode))
-                    - Energy.tempToCents(mThermostat.getAmbientTemperatureC(), display_temp, KEY_COOL.equals(mode));
+            double saving = Energy.tempToCents(ambientC, init_target_temp, KEY_COOL.equals(mode))
+                    - Energy.tempToCents(ambientC, display_temp, KEY_COOL.equals(mode));
+            double maxSaving = Energy.tempToCents(ambientC, init_target_temp, KEY_COOL.equals(mode));
+
+            ClipDrawable mCoinStackClip = (ClipDrawable) mCoinStackImg.getDrawable();
+            mCoinStackClip.setLevel((int)(saving/maxSaving*10000));
+
             mSavingText.setText("¢ "+String.format("%.0f", saving));
         }
 
+    }
+
+    private void setSeekbarListener(){
+        mTempSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) { }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) { }
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress,boolean fromUser) {
+                if(progress<=100 && progress>=0){
+                    display_temp = Tools.roundToHalf((32-9)*progress/100.0+9);
+                    Log.v(TAG, "temp:"+display_temp);
+                    ClipDrawable mMercuryClip = (ClipDrawable) mMercuryImg.getDrawable();
+                    mMercuryClip.setLevel(progress*100);
+                    updateSingleControlView();
+                }
+            }
+        });
     }
 }

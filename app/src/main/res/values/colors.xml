@@ -3,5 +3,6 @@
     <color name="heat">#E15E1F</color>
     <color name="cool">#006BEC</color>
     <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
     <color name="off">#222222</color>
 </resources>
