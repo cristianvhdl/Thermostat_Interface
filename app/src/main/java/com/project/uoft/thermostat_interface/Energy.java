@@ -1,13 +1,13 @@
 package com.project.uoft.thermostat_interface;
 
 import android.util.Log;
-import android.widget.Toast;
-
-//import com.nestapi.lib.API.Thermostat;
 
 import java.util.Calendar;
 
 public class Energy {
+
+    private static final String TAG = Energy.class.getSimpleName();
+
     public static double HEATING_RATE = 0.1f; // degree per minute (C)
     public static double COOLING_RATE = 0.1f; // degree per minute (C)
     public static double HEATING_POWER = 3.5f;    // kW for heating
@@ -21,7 +21,6 @@ public class Energy {
     // how many minutes it takes to reach target temperature
     public static double timeToTemp(double currTempC, double tarTempC, boolean cooling){
         if(cooling){
-//            Log.v("Energy", "Need "+ Math.abs(tarTempC - currTempC)/COOLING_RATE + " minutes to reach "+tarTempC +" C");
             return Math.abs(tarTempC - currTempC)/COOLING_RATE;
         }else{
             return Math.abs(tarTempC - currTempC)/HEATING_RATE;
@@ -38,42 +37,46 @@ public class Energy {
             power = HEATING_POWER;
         }
 
-        Log.v("Energy", "Need "+ timeToTemp(currTempC, tarTempC, cooling)/60 + "hours to reach "+tarTempC +" C");
+        Log.v(TAG, "Need "+ timeToTemp(currTempC, tarTempC, cooling)/60 + "hours to reach "+tarTempC +" C");
         return timeToTemp(currTempC, tarTempC, cooling)/60 * power * elec_price;
     }
 
 
     // how much can a given saving amount change the target temperature
-    public static double centsToTemp(double cents, double ambientTempC, boolean cooling){
-        double elec_price = currElecPrice();
-        double power, rate, duration, tempDiff;
-
-        if(cooling){
-            power = COOLING_POWER;
-            rate = COOLING_RATE;
-        }else{
-            power = HEATING_POWER;
-            rate = HEATING_RATE * -1;
-        }
-
-        duration = cents/(elec_price*power)*60;
-        tempDiff = duration*rate;
-
-        return tempDiff;
-    }
+//    public static double centsToTemp(double cents, double ambientTempC, boolean cooling){
+//        double elec_price = currElecPrice();
+//        double power, rate, duration, tempDiff;
+//
+//        if(cooling){
+//            power = COOLING_POWER;
+//            rate = COOLING_RATE;
+//        }else{
+//            power = HEATING_POWER;
+//            rate = HEATING_RATE * -1;
+//        }
+//
+//        duration = cents/(elec_price*power)*60;
+//        tempDiff = duration*rate;
+//
+//        return tempDiff;
+//    }
 
     public static String currElecStatus(){
         String status = "OFF PEAK";
+
         // Time
         Calendar c = Calendar.getInstance();
-        int Hr24=c.get(Calendar.HOUR_OF_DAY);
+        int hr24=c.get(Calendar.HOUR_OF_DAY);
+        int day = c.get(Calendar.DAY_OF_WEEK);
 
-        if(Hr24 >= 11 && Hr24 <= 16){
+        if(day == Calendar.SATURDAY || day == Calendar.SUNDAY){
+            status = "OFF PEAK";
+        }else if(hr24 >= 11 && hr24 <= 16){
             status = "ON PEAK";
-        }else if( (Hr24 >= 7 && Hr24 <= 10) || (Hr24 >= 5 && Hr24 <= 6)){
+        }else if( (hr24 >= 7 && hr24 <= 10) || (hr24 >= 5 && hr24 <= 6)){
             status = "MID PEAK";
         }
-        Log.v("Energy", "Current Electricity: "+status);
+//        Log.v(TAG, "Current Electricity: "+status);
 
         return status;
     }
@@ -87,7 +90,7 @@ public class Energy {
         else if(status.equals("MID PEAK"))
             price = ELEC_MID_PEAK;
 
-        Log.v("Energy", "Current Price is "+price);
+//        Log.v(TAG, "Current Price is "+price);
         return price;
     }
 }

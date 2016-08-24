@@ -9,6 +9,98 @@
     tools:context=".MainActivity">
 
     <RelativeLayout
+        android:id="@+id/ui_coinstack_thermometer"
+        android:layout_width="@dimen/coin_stack_view_width"
+        android:layout_height="@dimen/coin_stack_view_height"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:layout_centerInParent="true">
+
+        <ImageView
+            android:id="@+id/coin_stack_img"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentBottom="true"
+            android:src="@drawable/clip_coin_stack"/>
+
+        <RelativeLayout
+            android:id="@+id/thermometer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true">
+
+            <ImageView
+            android:id="@+id/thermometer_edge_img"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/thermometer_edge"/>
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/thermometer_bottom"
+                android:layout_centerHorizontal="true">
+
+                <ImageView
+                    android:id="@+id/mercury_img"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_alignParentBottom="true"
+                    android:src="@drawable/clip_mercury"/>
+
+                <com.project.uoft.thermostat_interface.widget.VerticalSeekBar
+                    android:id="@+id/tempSeekbar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/thermometer_mercury_height"
+                    android:progressDrawable="@android:color/transparent"
+                    android:layout_centerHorizontal="true"
+                    android:layout_alignParentBottom="true"/>
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/thermometer_bottom"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/gap"
+                android:layout_centerHorizontal="true">
+
+                <ImageView
+                    android:id="@+id/bottom2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignTop="@+id/bottom1"
+                    android:layout_centerHorizontal="true"
+                    android:src="@drawable/thermometer_bottom2_drawable"/>
+                <ImageView
+                    android:id="@+id/bottom1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/thermometer_bottom1_drawable" />
+
+                <TextView
+                    android:id="@+id/target_thermometer_temp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:textSize="25sp"
+                    android:layout_centerInParent="true" />
+            </RelativeLayout>
+
+            <View
+                android:id="@+id/gap"
+                android:layout_width="0dp"
+                android:layout_height="12dp"
+                android:layout_centerHorizontal="true"
+                android:layout_alignParentBottom="true"/>
+
+        </RelativeLayout>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/ui_circle_thermostat"
         android:layout_width="@dimen/thermostat_view_width"
         android:layout_height="@dimen/thermostat_view_height"
         android:paddingTop="10dp"
@@ -21,7 +113,6 @@
             android:layout_height="@dimen/thermostat_radius"
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
-
             android:background="@drawable/heat_thermostat_drawable">
 
             <include layout="@layout/single_control_layout" />

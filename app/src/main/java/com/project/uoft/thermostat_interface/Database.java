@@ -21,11 +21,6 @@ public class Database {
         mDatabase = instance.getReference();
     }
 
-    public void helloWorld(){
-        DatabaseReference myRef = instance.getReference("message2");
-        myRef.setValue("Hello, World!");
-    }
-
     public static void writeNewAction(String UID, Date timeStamp, Action newAction){
         Log.d(TAG, "writeNewAction: "+"UID=" + UID);
         mDatabase.child(USERS).child(UID).child("History").child(String.format("%tb %<td, %<tT",timeStamp)).setValue(newAction);

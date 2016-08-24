@@ -29,7 +29,7 @@
         android:textSize="@dimen/control_temp_size" />
 
     <TextView
-        android:id="@+id/current_temp"
+        android:id="@+id/target_temp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"

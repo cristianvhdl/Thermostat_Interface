@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.ClipDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -12,7 +11,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -31,6 +29,7 @@ import com.nestlabs.sdk.Thermostat;
 import com.project.uoft.thermostat_interface.widget.VerticalSeekBar;
 
 import java.util.Date;
+import java.util.Locale;
 
 public class MainActivity extends Activity implements View.OnClickListener {
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -50,11 +49,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private static final String REDIRECT_URL = Constants.REDIRECT_URL;
     private static final int AUTH_TOKEN_REQUEST_CODE = 123;
 
+    int saving;
+
     private static Context context;
     private TextView mAmbientTempText;
     private View mSingleControlContainer;
-    private TextView mCurrentTempText;
-    private TextView mStructureNameText;
+    private TextView mTargetTempText;
+//    private TextView mStructureNameText;
     private View mThermostatView;
     private View mRangeControlContainer;
     private TextView mCurrentCoolTempText;
@@ -90,15 +91,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_main);
-        setContentView(R.layout.ui_coin_stack);
+        setContentView(R.layout.activity_main);
 
-
+        changeUIMode(1);
         // Initialization
         mActivity = this;
         mThermostatView = findViewById(R.id.thermostat_view);
         mSingleControlContainer = findViewById(R.id.single_control);
-        mCurrentTempText = (TextView) findViewById(R.id.current_temp);
+
 //        mStructureNameText = (TextView) findViewById(R.id.structure_name);
         mAmbientTempText = (TextView) findViewById(R.id.ambient_temp);
         mStructureAway = (Button) findViewById(R.id.structure_away_btn);
@@ -107,7 +107,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mCurrentHeatTempText = (TextView) findViewById(R.id.current_heat_temp);
 
         mCoinView = findViewById(R.id.coin_view);
-        mSavingText = (TextView) findViewById(R.id.saving_text);
+
         mSavingUp = (TextView)findViewById(R.id.saving_up);
         mSavingDown = (TextView)findViewById(R.id.saving_down);
         mElecStatusText = (TextView)findViewById(R.id.elec_status_text);
@@ -171,9 +171,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mDB = new Database();
     }
 
-    public static Context getAppContext(){
-        return MainActivity.context;
-    }
+//    public static Context getAppContext(){
+//        return MainActivity.context;
+//    }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -231,8 +231,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
         double tempDiffC = targetC - ambientC;
         boolean isHeating = KEY_HEAT.equals(mode) && tempDiffC > 0;
         boolean isCooling = KEY_COOL.equals(mode) && tempDiffC < 0;
-        boolean isAboveAmbient = tempDiffC > 0;
-        boolean isBelowAmbient = tempDiffC < 0;
 
         switch (v.getId()) {
             case R.id.coin_img:
@@ -254,7 +252,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 mThermostatView.getLayoutParams().width = thermRadius;
                 mTempUp.setVisibility(View.GONE);
                 mTempDown.setVisibility(View.GONE);
-                mCurrentTempText.setTextSize(tempTextSize);
+                mTargetTempText.setTextSize(tempTextSize);
 
                 break;
             case R.id.thermostat_view:
@@ -276,14 +274,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 mThermostatView.getLayoutParams().width = thermRadius;
                 mTempUp.setVisibility(View.VISIBLE);
                 mTempDown.setVisibility(View.VISIBLE);
-                mCurrentTempText.setTextSize(tempTextSize);
+                mTargetTempText.setTextSize(tempTextSize);
                 break;
             case R.id.confirm_btn:
                 Log.d(TAG, "Clicked Confirm");
                 if (display_temp != init_temp){ //if target temp is different from initial temperature
                     mNest.thermostats.setTargetTemperatureC(mThermostat.getDeviceId(), display_temp);
                     Date timeStamp = new Date();
-                    Action newAction = new Action(mThermostat.getTargetTemperatureC(), display_temp, mThermostat.getAmbientTemperatureC());
+                    Action newAction = new Action(mThermostat.getTargetTemperatureC(), display_temp, mThermostat.getAmbientTemperatureC(), saving);
                     String UID = FirebaseAuth.getInstance().getCurrentUser().getUid();
                     Database.writeNewAction(UID, timeStamp, newAction);
                 }
@@ -312,16 +310,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     display_temp-=0.5;
                 updateSingleControlView();
                 break;
-            case R.id.temp_heat_up:
-            case R.id.temp_heat_down:
-            case R.id.temp_cool_up:
-            case R.id.temp_cool_down:
-                if (KEY_HEAT_COOL.equals(mode)) {
-                    updateTempRange(v);
-                } else if (KEY_OFF.equals(mode)) {
-                    Log.d(TAG, "Cannot set temperature when HVAC mode is off.");
-                }
-                break;
+//            case R.id.temp_heat_up:
+//            case R.id.temp_heat_down:
+//            case R.id.temp_cool_up:
+//            case R.id.temp_cool_down:
+//                if (KEY_HEAT_COOL.equals(mode)) {
+////                    updateTempRange(v);
+//                } else if (KEY_OFF.equals(mode)) {
+//                    Log.d(TAG, "Cannot set temperature when HVAC mode is off.");
+//                }
+//                break;
             case R.id.heat:
                 mNest.thermostats.setHVACMode(thermostatID, KEY_HEAT);
                 break;
@@ -413,34 +411,34 @@ public class MainActivity extends Activity implements View.OnClickListener {
         });
     }
 
-    private void updateTempRange(View v) {
-        String thermostatID = mThermostat.getDeviceId();
-        long tempHigh = mThermostat.getTargetTemperatureHighF();
-        long tempLow = mThermostat.getTargetTemperatureLowF();
-
-        switch (v.getId()) {
-            case R.id.temp_cool_down:
-                tempLow -= 1;
-                mNest.thermostats.setTargetTemperatureLowF(thermostatID, tempLow);
-                mCurrentCoolTempText.setText(String.format(DEG_F, tempLow));
-                break;
-            case R.id.temp_cool_up:
-                tempLow += 1;
-                mNest.thermostats.setTargetTemperatureLowF(thermostatID, tempLow);
-                mCurrentCoolTempText.setText(String.format(DEG_F, tempLow));
-                break;
-            case R.id.temp_heat_down:
-                tempHigh -= 1;
-                mNest.thermostats.setTargetTemperatureHighF(thermostatID, tempHigh);
-                mCurrentHeatTempText.setText(String.format(DEG_F, tempHigh));
-                break;
-            case R.id.temp_heat_up:
-                tempHigh += 1;
-                mNest.thermostats.setTargetTemperatureHighF(thermostatID, tempHigh);
-                mCurrentHeatTempText.setText(String.format(DEG_F, tempHigh));
-                break;
-        }
-    }
+//    private void updateTempRange(View v) {
+//        String thermostatID = mThermostat.getDeviceId();
+//        long tempHigh = mThermostat.getTargetTemperatureHighF();
+//        long tempLow = mThermostat.getTargetTemperatureLowF();
+//
+//        switch (v.getId()) {
+//            case R.id.temp_cool_down:
+//                tempLow -= 1;
+//                mNest.thermostats.setTargetTemperatureLowF(thermostatID, tempLow);
+//                mCurrentCoolTempText.setText(String.format(Locale.CANADA, DEG_F, tempLow));
+//                break;
+//            case R.id.temp_cool_up:
+//                tempLow += 1;
+//                mNest.thermostats.setTargetTemperatureLowF(thermostatID, tempLow);
+//                mCurrentCoolTempText.setText(String.format(DEG_F, tempLow));
+//                break;
+//            case R.id.temp_heat_down:
+//                tempHigh -= 1;
+//                mNest.thermostats.setTargetTemperatureHighF(thermostatID, tempHigh);
+//                mCurrentHeatTempText.setText(String.format(DEG_F, tempHigh));
+//                break;
+//            case R.id.temp_heat_up:
+//                tempHigh += 1;
+//                mNest.thermostats.setTargetTemperatureHighF(thermostatID, tempHigh);
+//                mCurrentHeatTempText.setText(String.format(DEG_F, tempHigh));
+//                break;
+//        }
+//    }
 
     private void updateViews() {
         if (mStructure == null || mThermostat == null) {
@@ -456,7 +454,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     private void updateAmbientTempTextView() {
-        mAmbientTempText.setText(String.format(DEG_C, mThermostat.getAmbientTemperatureC()));
+        mAmbientTempText.setText(String.format(Locale.CANADA, DEG_C, mThermostat.getAmbientTemperatureC()));
     }
 
     private void updateStructureViews() {
@@ -499,7 +497,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             rangeControlVisibility = View.GONE;
             findViewById(R.id.temp_up).setVisibility(View.GONE);
             findViewById(R.id.temp_down).setVisibility(View.GONE);
-            mCurrentTempText.setText(R.string.thermostat_off);
+            mTargetTempText.setText(R.string.thermostat_off);
             mThermostatView.setBackgroundResource(R.drawable.off_thermostat_drawable);
         } else {
             singleControlVisibility = View.VISIBLE;
@@ -529,8 +527,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
 
         // Update the view.
-        mCurrentHeatTempText.setText(String.format(DEG_F, highF));
-        mCurrentCoolTempText.setText(String.format(DEG_F, lowF));
+        mCurrentHeatTempText.setText(String.format(Locale.CANADA, DEG_F, highF));
+        mCurrentCoolTempText.setText(String.format(Locale.CANADA, DEG_F, lowF));
         mThermostatView.setBackgroundResource(thermostatDrawable);
     }
 
@@ -552,30 +550,37 @@ public class MainActivity extends Activity implements View.OnClickListener {
         GradientDrawable shapeBottom2 = (GradientDrawable) mThermometerBottom2.getDrawable();
 
         if (isAway) {
-            mCurrentTempText.setText(R.string.thermostat_away);
+            mTargetTempText.setText(R.string.thermostat_away);
             mThermostatView.setBackgroundResource(thermDrawable);
             return;
         } else if (isHeating) {
             thermDrawable = R.drawable.heat_thermostat_drawable;
             upColor = Color.RED;
             downColor = Color.GREEN;
-            thermometerColor = getResources().getColor(R.color.heat);
+            thermometerColor = ContextCompat.getColor(context, R.color.heat);
         } else if (isCooling) {
             thermDrawable = R.drawable.cool_thermostat_drawable;
             upColor = Color.GREEN;
             downColor = Color.RED;
-            thermometerColor = getResources().getColor(R.color.cool);
+            thermometerColor =ContextCompat.getColor(context,R.color.cool);
+        }
+
+        if(saving > 0 ){
+            mSavingText.setTextColor(Color.GREEN);
+        }else if(saving < 0 ){
+            mSavingText.setTextColor(Color.RED);
         }else{
+            mSavingText.setTextColor(Color.BLACK);
         }
 
         // Update the view.
-        mCurrentTempText.setText(String.format(DEG_C, targetC));
+        mTargetTempText.setText(String.format(Locale.CANADA, DEG_C, targetC));
         mThermostatView.setBackgroundResource(thermDrawable);
         mTempUp.setTextColor(upColor);
         mTempDown.setTextColor(downColor);
 
         shapeBottom1.setColor(thermometerColor);
-        shapeBottom2.setColor(getResources().getColor(R.color.heat));
+        shapeBottom2.setColor(thermometerColor);
 
         updateSaving(!isCooling && !isHeating);
     }
@@ -599,14 +604,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         if(!isOff || display_temp == ambient_temp) {  // while the HVAC is ON, the saving will be updated
             Log.v(TAG, "Update Saving");
-            double saving = Energy.tempToCents(ambientC, init_target_temp, KEY_COOL.equals(mode))
-                    - Energy.tempToCents(ambientC, display_temp, KEY_COOL.equals(mode));
+            saving = (int)Energy.tempToCents(ambientC, init_target_temp, KEY_COOL.equals(mode))
+                    - (int)Energy.tempToCents(ambientC, display_temp, KEY_COOL.equals(mode));
             double maxSaving = Energy.tempToCents(ambientC, init_target_temp, KEY_COOL.equals(mode));
 
             ClipDrawable mCoinStackClip = (ClipDrawable) mCoinStackImg.getDrawable();
             mCoinStackClip.setLevel((int)(saving/maxSaving*10000));
 
-            mSavingText.setText("¢ "+String.format("%.0f", saving));
+            mSavingText.setText("¢ "+saving);
         }
 
     }
@@ -631,5 +636,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 }
             }
         });
+    }
+
+    private void changeUIMode(int mode){
+        findViewById(R.id.ui_circle_thermostat).setVisibility(View.GONE);
+        findViewById(R.id.ui_coinstack_thermometer).setVisibility(View.GONE);
+
+        if(mode==0){
+            findViewById(R.id.ui_circle_thermostat).setVisibility(View.VISIBLE);
+            mTargetTempText = (TextView) findViewById(R.id.target_temp);
+            mSavingText = (TextView) findViewById(R.id.saving_text);
+        }else if(mode == 1){
+            findViewById(R.id.ui_coinstack_thermometer).setVisibility(View.VISIBLE);
+            mTargetTempText = (TextView) findViewById(R.id.target_thermometer_temp);
+            mSavingText = (TextView) findViewById(R.id.saving_text1);
+        }
     }
 }
