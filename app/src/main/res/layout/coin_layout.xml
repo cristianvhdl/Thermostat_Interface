@@ -26,18 +26,7 @@
         android:layout_centerInParent="true"
         android:layout_margin="1dp"
         android:textSize="@dimen/coin_text_size_normal"/>
-    <!--<TextView-->
-    <!--android:id="@+id/saving_text"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:layout_alignLeft="@+id/coin_img"-->
-    <!--android:layout_alignTop="@+id/coin_img"-->
-    <!--android:layout_alignRight="@+id/coin_img"-->
-    <!--android:layout_alignBottom="@+id/coin_img"-->
-    <!--android:layout_margin="1dp"-->
-    <!--android:gravity="center"-->
-    <!--android:text=""-->
-    <!--android:textColor="#000000" />-->
+
     <TextView
         android:id="@+id/saving_down"
         android:layout_width="wrap_content"

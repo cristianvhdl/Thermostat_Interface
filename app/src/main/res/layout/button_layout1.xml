@@ -5,31 +5,6 @@
     android:layout_height="match_parent"
     tools:showIn="@layout/activity_main">
 
-    <!--<TextView-->
-    <!--android:id="@+id/structure_name"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:layout_alignParentLeft="true"-->
-    <!--android:layout_alignParentStart="true"-->
-    <!--android:layout_alignParentTop="true"-->
-    <!--android:layout_toLeftOf="@+id/textView"-->
-    <!--android:layout_toStartOf="@+id/textView"-->
-    <!--android:paddingEnd="0dp"-->
-    <!--android:paddingLeft="5dp"-->
-    <!--android:paddingRight="0dp"-->
-    <!--android:paddingStart="5dp"-->
-    <!--android:text="@string/ellipsis"-->
-    <!--android:textSize="18sp" />-->
-    <Button
-        android:id="@+id/structure_away_btn"
-        android:fontFamily="sans-serif-condensed"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:visibility="gone"/>
-    <!--android:layout_below="@+id/structure_name" />-->
-
 
     <LinearLayout
         android:id="@+id/room_temp"
@@ -57,23 +32,6 @@
             android:layout_marginTop="-6dp"/>
     </LinearLayout>
 
-    <!--<TextView-->
-        <!--android:id="@+id/textView"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_alignBottom="@+id/structure_away_btn"-->
-        <!--android:layout_alignTop="@+id/structure_away_btn"-->
-        <!--android:layout_toEndOf="@+id/structure_away_btn"-->
-        <!--android:layout_toRightOf="@+id/structure_away_btn"-->
-        <!--android:gravity="center_vertical"-->
-        <!--android:paddingEnd="0dp"-->
-        <!--android:paddingLeft="5dp"-->
-        <!--android:paddingRight="0dp"-->
-        <!--android:paddingStart="5dp"-->
-        <!--android:text="@string/curr_temp"-->
-        <!--android:textSize="18sp"-->
-        <!--android:textStyle="bold" />-->
-
     <LinearLayout
         android:id="@+id/hvac_mode_control_container"
         android:layout_width="match_parent"
@@ -95,13 +53,6 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Cool" />
-        <!--<Button-->
-            <!--android:id="@+id/heat_cool"-->
-            <!--android:layout_width="0dp"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_weight="1"-->
-            <!--android:visibility="gone"-->
-            <!--android:text="Range" />-->
 
         <Button
             android:id="@+id/off"
@@ -121,25 +72,6 @@
             android:text="CONFIRM" />
     </LinearLayout>
 
-    <!--<TextView-->
-    <!--android:id="@+id/textView2"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:layout_above="@+id/hvac_mode_control_container"-->
-    <!--android:layout_alignParentLeft="true"-->
-    <!--android:layout_alignParentStart="true"-->
-    <!--android:paddingLeft="5dp"-->
-    <!--android:text="Thermostat mode:"-->
-    <!--android:textSize="18dp"-->
-    <!--android:textStyle="bold" />-->
-
-    <!--<Button-->
-        <!--android:id="@+id/logout_button"-->
-        <!--android:layout_width="0dp"-->
-        <!--android:layout_height="0dp"-->
-        <!--android:layout_alignParentEnd="true"-->
-        <!--android:layout_alignParentRight="true"-->
-        <!--android:text="Logout" />-->
     <TextView
         android:id="@+id/elec_status_text"
         android:layout_width="wrap_content"
@@ -156,19 +88,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Wait 3 hrs + ¢5/hr"
+        android:textSize="@dimen/wait_text_size"
         android:fontFamily="sans-serif-condensed"
         android:layout_above="@+id/hvac_mode_control_container"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
-
-    <!--<Button-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:paddingBottom="10dp"-->
-        <!--android:text="CONFIRM"-->
-        <!--android:id="@+id/confirm_btn"-->
-        <!--android:layout_above="@+id/hvac_mode_control_container"-->
-        <!--android:layout_alignRight="@+id/hvac_mode_control_container"-->
-        <!--android:layout_alignEnd="@+id/hvac_mode_control_container" />-->
 
 </RelativeLayout>

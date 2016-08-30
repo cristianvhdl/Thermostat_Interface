@@ -25,7 +25,6 @@
             android:background="@drawable/heat_thermostat_drawable">
 
             <include layout="@layout/single_control_layout" />
-            <include layout="@layout/range_control_layout" />
 
         </RelativeLayout>
 
@@ -146,7 +145,7 @@
         android:fontFamily="sans-serif-condensed"
         android:textSize="25dp"
         android:text="saving"
-        android:layout_below="@+id/ui_coinstack_thermometer"
+        android:layout_alignBottom="@+id/ui_coinstack_thermometer"
         android:layout_alignParentLeft="true" />
 
     <include layout="@layout/button_layout1"/>

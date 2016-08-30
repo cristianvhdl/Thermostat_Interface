@@ -4,8 +4,8 @@
     <string name="thermostat_off">Off</string>
     <string name="thermostat_away">Away</string>
     <string name="thermostat_auto_away">Auto Away</string>
-    <string name="away_state_home">Home</string>
-    <string name="away_state_away">Away</string>
+    <string name="away_state_home">I\'m Home</string>
+    <string name="away_state_away">I\'m Away</string>
     <string name="away_state_auto_away">Auto Away</string>
     <string name="decrease_temp">-</string>
     <string name="increase_temp">+</string>
@@ -13,4 +13,6 @@
 
     <string name="menu_settings_title">Settings</string>
     <string name="menu_refresh_title">Refresh UI</string>
+    <string name="menu_logout_title">Logout</string>
+
 </resources>

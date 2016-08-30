@@ -107,7 +107,6 @@
         android:background="@drawable/heat_thermostat_drawable">
 
         <include layout="@layout/single_control_layout" />
-        <include layout="@layout/range_control_layout" />
     </RelativeLayout>
 
     <LinearLayout

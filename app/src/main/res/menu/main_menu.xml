@@ -4,10 +4,22 @@
     tools:context=".MainActivity">
     <item
         android:id="@+id/menu_refresh_ui"
-        android:orderInCategory="100"
+        android:orderInCategory="1"
         android:title="@string/menu_refresh_title"/>
+
+    <item
+        android:id="@+id/menu_away"
+        android:orderInCategory="2"
+        android:title="@string/away_state_home"/>
+
     <item
         android:id="@+id/menu_settings"
-        android:orderInCategory="100"
+        android:orderInCategory="3"
         android:title="@string/menu_settings_title"/>
+
+    <item
+        android:id="@+id/menu_logout"
+        android:orderInCategory="4"
+        android:title="@string/menu_logout_title"/>
+
 </menu>

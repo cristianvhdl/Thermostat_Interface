@@ -14,7 +14,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -46,42 +45,40 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private static final String KEY_HOME = "home";
     private static final String KEY_HEAT = "heat";
     private static final String KEY_COOL = "cool";
-//    private static final String KEY_HEAT_COOL = "heat-cool";
     private static final String KEY_OFF = "off";
-//    private static final String DEG_F = "%d°";
     private static final String DEG_C = "%.1f°";
     private static final String CLIENT_ID = Constants.CLIENT_ID;
     private static final String CLIENT_SECRET = Constants.CLIENT_SECRET;
     private static final String REDIRECT_URL = Constants.REDIRECT_URL;
     private static final int AUTH_TOKEN_REQUEST_CODE = 123;
 
-    int saving;
-
+    private int saving;
+    private double display_temp;
     private static Context context;
-    private TextView mAmbientTempText;
-    private View mSingleControlContainer;
-    private TextView mTargetTempText;
-    private TextView mWaitText;
-//    private TextView mStructureNameText;
-    private View mThermostatView;
-//    private View mRangeControlContainer;
-//    private TextView mCurrentCoolTempText;
-//    private TextView mCurrentHeatTempText;
-    private Button mStructureAway;
+
+    // Nest related
     private NestAPI mNest;
     private NestToken mToken;
     private Thermostat mThermostat;
     private Structure mStructure;
     private Activity mActivity;
 
+    // UI related
+    // General UI components
+    private Menu menu;
+    private TextView mAmbientTempText;
+    private TextView mTargetTempText;
+    private TextView mElecStatusText;
+    private TextView mWaitText;
+    // UI 0
+    private View mThermostatView;
     private View mCoinView;
     private TextView mSavingText;
     private TextView mSavingUp;
     private TextView mSavingDown;
     private TextView mTempUp;
     private TextView mTempDown;
-    private double display_temp;
-    private TextView mElecStatusText;
+    // UI 1
     private ImageView mCoinStackImg;
     private ImageView mMercuryImg;
     private ImageView mThermometerBottom1;
@@ -99,30 +96,24 @@ public class MainActivity extends Activity implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        MainActivity.context=getApplicationContext();
 
-        // Initialization
+        // Initializations
+        // General UI components
         mActivity = this;
-        mThermostatView = findViewById(R.id.thermostat_view);
-        mSingleControlContainer = findViewById(R.id.single_control);
-
-//        mStructureNameText = (TextView) findViewById(R.id.structure_name);
         mAmbientTempText = (TextView) findViewById(R.id.ambient_temp);
         mWaitText = (TextView) findViewById(R.id.wait_text);
-        mStructureAway = (Button) findViewById(R.id.structure_away_btn);
-//        mRangeControlContainer = findViewById(R.id.range_control);
-//        mCurrentCoolTempText = (TextView) findViewById(R.id.current_cool_temp);
-//        mCurrentHeatTempText = (TextView) findViewById(R.id.current_heat_temp);
-        mSavingText = (TextView) findViewById(R.id.saving_text);
         mTargetTempText = (TextView) findViewById(R.id.target_temp);
-
+        mElecStatusText = (TextView)findViewById(R.id.elec_status_text);
+        // UI 0
+        mThermostatView = findViewById(R.id.thermostat_view);
         mCoinView = findViewById(R.id.coin_view);
-
+        mSavingText = (TextView) findViewById(R.id.saving_text);
         mSavingUp = (TextView)findViewById(R.id.saving_up);
         mSavingDown = (TextView)findViewById(R.id.saving_down);
-        mElecStatusText = (TextView)findViewById(R.id.elec_status_text);
         mTempUp = (TextView) findViewById(R.id.temp_up);
         mTempDown = (TextView) findViewById(R.id.temp_down);
-
+        // UI 1
         mCoinStackImg = (ImageView) findViewById(R.id.coin_stack_img);
         mMercuryImg = (ImageView)findViewById(R.id.mercury_img);
         mThermometerBottom1 = (ImageView)findViewById(R.id.bottom1);
@@ -131,36 +122,25 @@ public class MainActivity extends Activity implements View.OnClickListener {
         setSeekbarListener();
         mTempSeekbar.getThumb().mutate().setAlpha(0);
 
-        mStructureAway.setOnClickListener(this);
-//        findViewById(R.id.logout_button).setOnClickListener(this);
+        // Initialize Click Listeners
         findViewById(R.id.heat).setOnClickListener(this);
         findViewById(R.id.cool).setOnClickListener(this);
-
-//        findViewById(R.id.heat_cool).setOnClickListener(this);
-//        findViewById(R.id.heat_cool).setEnabled(false);
         findViewById(R.id.off).setOnClickListener(this);
         findViewById(R.id.confirm_btn).setOnClickListener(this);
-
         findViewById(R.id.temp_up).setOnClickListener(this);
         findViewById(R.id.temp_down).setOnClickListener(this);
-        findViewById(R.id.temp_cool_up).setOnClickListener(this);
-        findViewById(R.id.temp_cool_down).setOnClickListener(this);
-        findViewById(R.id.temp_heat_up).setOnClickListener(this);
-        findViewById(R.id.temp_heat_down).setOnClickListener(this);
         findViewById(R.id.thermostat_view).setOnClickListener(this);
         findViewById(R.id.coin_img).setOnClickListener(this);
         findViewById(R.id.saving_up).setOnClickListener(this);
         findViewById(R.id.saving_down).setOnClickListener(this);
 
-        MainActivity.context=getApplicationContext();
-
+        // Initialize Nest API
         NestAPI.setAndroidContext(this);
         mNest = NestAPI.getInstance();
 
-        // Authentication
+        // Nest and Firebase Authentication
         mToken = Auth.loadAuthToken(this);
         Auth.initialize();
-
         if (mToken != null) {
             authenticate(mToken);
         } else {
@@ -168,7 +148,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             mNest.launchAuthFlow(this, AUTH_TOKEN_REQUEST_CODE);
         }
 
-        //
+        // If the activity need to be re-created
         if (savedInstanceState != null) {
             Log.v(TAG, "savedInstanceState != null");
             mThermostat = savedInstanceState.getParcelable(THERMOSTAT_KEY);
@@ -176,20 +156,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
             updateViews();
         }
 
-        // Database
+        // Initialize Database class
         mDB = new Database();
 
-        // Remote Config
+        // Initialize Remote Config
         mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
         FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
                 .setDeveloperModeEnabled(BuildConfig.DEBUG)
                 .build();
         mFirebaseRemoteConfig.setConfigSettings(configSettings);
         mFirebaseRemoteConfig.setDefaults(R.xml.remote_config_defaults);
-
         cacheExpiration = 3600; // 1 hour in seconds.
-        // If in developer mode cacheExpiration is set to 0 so each fetch will retrieve values from
-        // the server.
+        // If in developer mode cacheExpiration is set to 0 so each fetch will retrieve values from the server.
         if (mFirebaseRemoteConfig.getInfo().getConfigSettings().isDeveloperModeEnabled()) {
             cacheExpiration = 0;
         }
@@ -199,6 +177,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
         getMenuInflater().inflate(R.menu.main_menu, menu);
+        this.menu = menu;
 
         return super.onCreateOptionsMenu(menu);
     }
@@ -210,14 +189,51 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 Log.v(TAG,"clicked Refresh UI");
                 updateUIMode();
                 updateViews();
-
                 break;
             case R.id.menu_settings:
                 Log.v(TAG,"clicked Settings");
                 break;
+            case R.id.menu_away:
+                Log.v(TAG,"clicked home/away");
+                String awayState = mStructure.getAway();
+                if (KEY_AUTO_AWAY.equals(awayState) || KEY_AWAY.equals(awayState)) {
+                    awayState = KEY_HOME;
+                } else if (KEY_HOME.equals(awayState)) {
+                    awayState = KEY_AWAY;
+                } else {
+                    break;
+                }
+
+                mNest.structures.setAway(mStructure.getStructureId(), awayState, new Callback() {
+                    @Override
+                    public void onSuccess() {
+                        Log.d(TAG, "Successfully set away state.");
+                    }
+
+                    @Override
+                    public void onFailure(NestException exception) {
+                        Log.d(TAG, "Failed to set away state: " + exception.getMessage());
+                    }
+                });
+                break;
+            case R.id.menu_logout:
+                Auth.signOut();
+                Auth.saveAuthToken(this, null);
+                mNest.launchAuthFlow(this, AUTH_TOKEN_REQUEST_CODE);
+                break;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void updateMenuItems(){
+        String awayState = mStructure.getAway();
+        MenuItem menuAway = menu.findItem(R.id.menu_away);
+        if (KEY_AUTO_AWAY.equals(awayState) || KEY_AWAY.equals(awayState)) {
+            menuAway.setTitle(R.string.away_state_home);
+        } else if (KEY_HOME.equals(awayState)) {
+            menuAway.setTitle(R.string.away_state_away);
+        }
     }
 
 //    public static Context getAppContext(){
@@ -271,7 +287,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         String thermostatID = mThermostat.getDeviceId();
         String mode = mThermostat.getHvacMode();
-        String awayState = mStructure.getAway();
         double init_temp = mThermostat.getTargetTemperatureC();
         int coinRadius, savingTextSize, thermRadius, tempTextSize;
 
@@ -359,54 +374,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     display_temp-=0.5;
                 updateSingleControlView();
                 break;
-//            case R.id.temp_heat_up:
-//            case R.id.temp_heat_down:
-//            case R.id.temp_cool_up:
-//            case R.id.temp_cool_down:
-//                if (KEY_HEAT_COOL.equals(mode)) {
-////                    updateTempRange(v);
-//                } else if (KEY_OFF.equals(mode)) {
-//                    Log.d(TAG, "Cannot set temperature when HVAC mode is off.");
-//                }
-//                break;
             case R.id.heat:
                 mNest.thermostats.setHVACMode(thermostatID, KEY_HEAT);
                 break;
             case R.id.cool:
                 mNest.thermostats.setHVACMode(thermostatID, KEY_COOL);
                 break;
-//            case R.id.heat_cool:
-//                mNest.thermostats.setHVACMode(thermostatID, KEY_HEAT_COOL);
-//                break;
             case R.id.off:
                 mNest.thermostats.setHVACMode(thermostatID, KEY_OFF);
-                break;
-            case R.id.structure_away_btn:
-                if (KEY_AUTO_AWAY.equals(awayState) || KEY_AWAY.equals(awayState)) {
-                    awayState = KEY_HOME;
-                    mStructureAway.setText(R.string.away_state_home);
-                } else if (KEY_HOME.equals(awayState)) {
-                    awayState = KEY_AWAY;
-                    mStructureAway.setText(R.string.away_state_away);
-                } else {
-                    return;
-                }
-
-                mNest.structures.setAway(mStructure.getStructureId(), awayState, new Callback() {
-                    @Override
-                    public void onSuccess() {
-                        Log.d(TAG, "Successfully set away state.");
-                    }
-
-                    @Override
-                    public void onFailure(NestException exception) {
-                        Log.d(TAG, "Failed to set away state: " + exception.getMessage());
-                    }
-                });
-                break;
-            case R.id.logout_button:
-                Auth.saveAuthToken(this, null);
-                mNest.launchAuthFlow(this, AUTH_TOKEN_REQUEST_CODE);
                 break;
         }
 
@@ -460,35 +435,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
         });
     }
 
-//    private void updateTempRange(View v) {
-//        String thermostatID = mThermostat.getDeviceId();
-//        long tempHigh = mThermostat.getTargetTemperatureHighF();
-//        long tempLow = mThermostat.getTargetTemperatureLowF();
-//
-//        switch (v.getId()) {
-//            case R.id.temp_cool_down:
-//                tempLow -= 1;
-//                mNest.thermostats.setTargetTemperatureLowF(thermostatID, tempLow);
-//                mCurrentCoolTempText.setText(String.format(Locale.CANADA, DEG_F, tempLow));
-//                break;
-//            case R.id.temp_cool_up:
-//                tempLow += 1;
-//                mNest.thermostats.setTargetTemperatureLowF(thermostatID, tempLow);
-//                mCurrentCoolTempText.setText(String.format(DEG_F, tempLow));
-//                break;
-//            case R.id.temp_heat_down:
-//                tempHigh -= 1;
-//                mNest.thermostats.setTargetTemperatureHighF(thermostatID, tempHigh);
-//                mCurrentHeatTempText.setText(String.format(DEG_F, tempHigh));
-//                break;
-//            case R.id.temp_heat_up:
-//                tempHigh += 1;
-//                mNest.thermostats.setTargetTemperatureHighF(thermostatID, tempHigh);
-//                mCurrentHeatTempText.setText(String.format(DEG_F, tempHigh));
-//                break;
-//        }
-//    }
-
     private void updateViews() {
         if (mStructure == null || mThermostat == null) {
             return;
@@ -497,9 +443,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
         display_temp = mThermostat.getTargetTemperatureC();
         Log.v(TAG,"updateViews: display_temp="+display_temp);
         updateAmbientTempTextView();
-        updateStructureViews();
+//        updateStructureViews();
+        updateMenuItems();
         updateThermostatViews();
         updateSingleControlView();
+
 
         //update the seekbar progress
         double temp = display_temp;
@@ -512,18 +460,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mAmbientTempText.setText(String.format(Locale.CANADA, DEG_C, mThermostat.getAmbientTemperatureC()));
     }
 
-    private void updateStructureViews() {
-//        mStructureNameText.setText(mStructure.getName());
-        mStructureAway.setText(mStructure.getAway());
-    }
-
     private void updateThermostatViews() {
-        int singleControlVisibility;
-//        int rangeControlVisibility;
+//        int singleControlVisibility;
         String mode = mThermostat.getHvacMode();
         String state = mStructure.getAway();
         boolean isAway = state.equals(KEY_AWAY) || state.equals(KEY_AUTO_AWAY);
-        Drawable default_btn_bg = findViewById(R.id.structure_away_btn).getBackground();
+        Drawable default_btn_bg = findViewById(R.id.confirm_btn).getBackground();
+//        singleControlVisibility = View.VISIBLE;
 
         if(KEY_HEAT.equals(mode)){
             findViewById(R.id.heat).setBackground(ContextCompat.getDrawable(this,R.drawable.highlight_button));
@@ -539,52 +482,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
             findViewById(R.id.heat).setBackground(default_btn_bg);
         }
 
-        if (isAway) {
-            singleControlVisibility = View.VISIBLE;
-//            rangeControlVisibility = View.GONE;
-//        } else if (KEY_HEAT_COOL.equals(mode)) {
-//            singleControlVisibility = View.GONE;
-//            rangeControlVisibility = View.VISIBLE;
-//            updateRangeControlView();
-        } else if (KEY_OFF.equals(mode)) {
-            singleControlVisibility = View.VISIBLE;
-//            rangeControlVisibility = View.GONE;
+        if (KEY_OFF.equals(mode)) {
             findViewById(R.id.temp_up).setVisibility(View.GONE);
             findViewById(R.id.temp_down).setVisibility(View.GONE);
             mTargetTempText.setText(R.string.thermostat_off);
             mThermostatView.setBackgroundResource(R.drawable.off_thermostat_drawable);
-        } else {
-            singleControlVisibility = View.VISIBLE;
-//            rangeControlVisibility = View.GONE;
         }
 
-
-        mSingleControlContainer.setVisibility(singleControlVisibility);
-//        mRangeControlContainer.setVisibility(rangeControlVisibility);
         mElecStatusText.setText("Electricity Status: "+ Energy.currElecStatus());
     }
-
-//    private void updateRangeControlView() {
-//        int thermostatDrawable;
-//        long lowF = mThermostat.getTargetTemperatureLowF();
-//        long highF = mThermostat.getTargetTemperatureHighF();
-//        long ambientF = mThermostat.getAmbientTemperatureF();
-//        boolean isCooling = (highF - ambientF) < 0;
-//        boolean isHeating = (lowF - ambientF) > 0;
-//
-//        if (isCooling) {
-//            thermostatDrawable = R.drawable.cool_thermostat_drawable;
-//        } else if (isHeating) {
-//            thermostatDrawable = R.drawable.heat_thermostat_drawable;
-//        } else {
-//            thermostatDrawable = R.drawable.off_thermostat_drawable;
-//        }
-//
-//        // Update the view.
-//        mCurrentHeatTempText.setText(String.format(Locale.CANADA, DEG_F, highF));
-//        mCurrentCoolTempText.setText(String.format(Locale.CANADA, DEG_F, lowF));
-//        mThermostatView.setBackgroundResource(thermostatDrawable);
-//    }
 
     private void updateSingleControlView() {
         int thermDrawable = R.drawable.off_thermostat_drawable;
@@ -604,11 +510,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         GradientDrawable shapeBottom2 = (GradientDrawable) mThermometerBottom2.getDrawable();
 
         Log.v(TAG, "updateSingleControlView");
-        if (isAway) {
-            mTargetTempText.setText(R.string.thermostat_away);
-            mThermostatView.setBackgroundResource(thermDrawable);
-            return;
-        } else if (isHeating) {
+
+        if (isHeating) {
             thermDrawable = R.drawable.heat_thermostat_drawable;
             mercuryDrawable = R.drawable.clip_mercury_heat;
             upColor = Color.RED;
@@ -623,7 +526,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
 
         // Update the view.
-        mTargetTempText.setText(String.format(Locale.CANADA, DEG_C, targetC));
+        if (isAway) {
+            mTargetTempText.setText(R.string.thermostat_away);
+        }else {
+            mTargetTempText.setText(String.format(Locale.CANADA, DEG_C, targetC));
+        }
         mThermostatView.setBackgroundResource(thermDrawable);
         mTempUp.setTextColor(upColor);
         mTempDown.setTextColor(downColor);
@@ -679,7 +586,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
             }
 
             // update and display the wait time and cost to maintain target temperature
-            mWaitText.setText("Wait: "+String.format("%.1f",timeToTemp)+" hrs + ¢"+maintainCost+"/hr");
+            if(display_temp == ambient_temp){
+                mWaitText.setText("");
+            }else{
+                mWaitText.setText("Wait: "+String.format("%.1f",timeToTemp)+" hrs + ¢"+maintainCost+"/hr");
+            }
         }else{
             // update and display the wait time and cost to maintain target temperature
             mWaitText.setText("");
@@ -718,11 +629,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
             mTargetTempText = (TextView) findViewById(R.id.target_temp);
 
             findViewById(R.id.ui_circle_thermostat).setVisibility(View.VISIBLE);
+            findViewById(R.id.coin_view).setVisibility(View.VISIBLE);
         }else if(mode == 1){
             mSavingText = (TextView) findViewById(R.id.saving_text1);
             mTargetTempText = (TextView) findViewById(R.id.target_thermometer_temp);
 
             findViewById(R.id.ui_coinstack_thermometer).setVisibility(View.VISIBLE);
+            findViewById(R.id.thermometer).setVisibility(View.VISIBLE);
             mSavingText.setVisibility(View.VISIBLE);
         }else if(mode == 2){
             mTargetTempText = (TextView) findViewById(R.id.target_temp);
@@ -736,6 +649,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             findViewById(R.id.thermometer).setVisibility(View.GONE);
             findViewById(R.id.coin_view).setVisibility(View.GONE);
         }
+        updateViews();
     }
 
     private void updateUIMode(){
