@@ -32,9 +32,10 @@ dependencies {
     compile 'com.nestlabs:android-sdk:1.1.0'              // NestAPI
     compile 'com.github.Triggertrap:SeekArc:v1.1'        // Circular Seekbar
 
-    compile 'com.google.firebase:firebase-core:9.2.1'   // Firebase
-    compile 'com.google.firebase:firebase-auth:9.2.1'   // Firebase Authentication
-    compile 'com.google.firebase:firebase-database:9.2.1'   // Firebase Realtime Database
+    compile 'com.google.firebase:firebase-core:9.4.0'   // Firebase
+    compile 'com.google.firebase:firebase-auth:9.4.0'   // Firebase Authentication
+    compile 'com.google.firebase:firebase-database:9.4.0'   // Firebase Realtime Database
+    compile 'com.google.firebase:firebase-config:9.4.0' // Firebase Remote Configuration
 }
 
 apply plugin: 'com.google.gms.google-services' // Firebase

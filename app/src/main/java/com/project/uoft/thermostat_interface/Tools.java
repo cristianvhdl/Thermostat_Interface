@@ -1,7 +1,7 @@
 package com.project.uoft.thermostat_interface;
 
 /**
- * Created by chens on 8/20/2016.
+ ToDo: add comments
  */
 public class Tools {
     public static double roundToHalf(double d) {

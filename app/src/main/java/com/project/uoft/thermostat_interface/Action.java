@@ -1,7 +1,6 @@
 package com.project.uoft.thermostat_interface;
-
 /**
- * Created by Lenovo on 7/29/2016.
+ ToDo: add comments
  */
 public class Action {
     Double oldTemp;

@@ -2,20 +2,21 @@
 
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+
     <dimen name="thermostat_view_width">300dp</dimen>
     <dimen name="thermostat_view_height">300dp</dimen>
     <dimen name="thermostat_radius">260dp</dimen>
     <dimen name="coin_radius">60dp</dimen>
     <dimen name="coin_text_size_normal">20sp</dimen>
-    <dimen name="coin_text_size_big">40sp</dimen>
-    <dimen name="temp_text_size">40sp</dimen>
+    <dimen name="coin_text_size_big">50sp</dimen>
+    <dimen name="temp_text_size">50sp</dimen>
     <dimen name="control_temp_size">50sp</dimen>
     <dimen name="control_padding">15sp</dimen>
 
     <dimen name="coin_stack_view_width">250dp</dimen>
-    <dimen name="coin_stack_view_height">300dp</dimen>
-    <dimen name="thermometer_bottom_radius">60dp</dimen>
-    <dimen name="thermometer_mercury_width">12dp</dimen>
-    <dimen name="thermometer_mercury_height">185dp</dimen>
+    <dimen name="coin_stack_view_height">320dp</dimen>
+    <dimen name="thermometer_bottom_radius">65dp</dimen>
+    <dimen name="thermometer_mercury_width">14dp</dimen>
+    <dimen name="thermometer_mercury_height">195dp</dimen>
 
 </resources>

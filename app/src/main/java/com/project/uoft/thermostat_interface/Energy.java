@@ -1,6 +1,8 @@
 package com.project.uoft.thermostat_interface;
 
-import android.util.Log;
+/**
+ ToDo: add comments
+ */
 
 import java.util.Calendar;
 
@@ -12,6 +14,7 @@ public class Energy {
     public static double COOLING_RATE = 0.1f; // degree per minute (C)
     public static double HEATING_POWER = 3.5f;    // kW for heating
     public static double COOLING_POWER = 3.5f;    // kW for cooling
+    public static double MAINTAIN_PERCENTAGE = 0.2; // percentage of time the HVAC is ON to maintain the target temperature
 
     // Time-of-Use Rates cents per kWh, weekends and holidays are off-peak all day
     public static final double ELEC_ON_PEAK = 18f;    // 11 am - 4 pm
@@ -31,14 +34,23 @@ public class Energy {
     public static double tempToCents(double currTempC, double tarTempC, boolean cooling){
         double elec_price = currElecPrice();
         double power;
-        if(cooling){
-            power = COOLING_POWER;
-        }else{
-            power = HEATING_POWER;
-        }
+        power = cooling?COOLING_POWER:HEATING_POWER;    // power=cooling_power if mode=Cooling or power=heating_power
+//        if(cooling){
+//            power = COOLING_POWER;
+//        }else{
+//            power = HEATING_POWER;
+//        }
 
-        Log.v(TAG, "Need "+ timeToTemp(currTempC, tarTempC, cooling)/60 + "hours to reach "+tarTempC +" C");
+//        Log.v(TAG, "Need "+ timeToTemp(currTempC, tarTempC, cooling)/60 + "hours to reach "+tarTempC +" C");
         return timeToTemp(currTempC, tarTempC, cooling)/60 * power * elec_price;
+    }
+
+    // calculate the cost to maintain target temp
+    public static double centsToMaintain(boolean cooling){
+        double elec_price = currElecPrice();
+        double power = cooling?COOLING_POWER:HEATING_POWER; // power=cooling_power if mode=Cooling or power=heating_power
+
+        return power * MAINTAIN_PERCENTAGE * elec_price;
     }
 
 
