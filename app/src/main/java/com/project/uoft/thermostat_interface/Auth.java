@@ -40,6 +40,7 @@ public class Auth implements Executor {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if(user != null){
                     isSignedIn = true;
+                    Energy mEnergy = new Energy();
                     Log.d(TAG, "onAuthStateChanged: signed in with ID: " + user.getUid());
                 }else{
                     isSignedIn = false;

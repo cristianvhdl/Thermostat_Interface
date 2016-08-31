@@ -58,9 +58,13 @@ public class Energy {
                 Log.w(TAG, "onCancelled", databaseError.toException());
             }
         };
-        String UID = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        Database.mDatabase.child("users").child(UID).child(Database.KEY_AC_POWER).addValueEventListener(postListenerAC);
-        Database.mDatabase.child("users").child(UID).child(Database.KEY_HEAT_POWER).addValueEventListener(postListenerHeat);
+        String UID;
+        if(FirebaseAuth.getInstance().getCurrentUser() != null){
+            UID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            Database.mDatabase.child("users").child(UID).child(Database.KEY_AC_POWER).addValueEventListener(postListenerAC);
+            Database.mDatabase.child("users").child(UID).child(Database.KEY_HEAT_POWER).addValueEventListener(postListenerHeat);
+            Log.v(TAG,"Retrieve Power Value Successful");
+        }
     }
 
     /**

@@ -94,9 +94,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
     //Database
     private Database mDB;
 
-    //Energy
-    private Energy mEnergy;
-
     //Remote Config
     private FirebaseRemoteConfig mFirebaseRemoteConfig;
     private long cacheExpiration;
@@ -172,9 +169,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         // Initialize Database class
         mDB = new Database();
-
-        // Initialize Energy class
-        mEnergy = new Energy();
 
         // Initialize Remote Config
         mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
@@ -548,8 +542,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
      */
     private void updateThermostatViews() {
         String mode = mThermostat.getHvacMode();
-        String state = mStructure.getAway();
-        boolean isAway = state.equals(KEY_AWAY) || state.equals(KEY_AUTO_AWAY);
+//        String state = mStructure.getAway();
+//        boolean isAway = state.equals(KEY_AWAY) || state.equals(KEY_AUTO_AWAY);
         Drawable default_btn_bg = findViewById(R.id.confirm_btn).getBackground();
 
         if(KEY_HEAT.equals(mode)){
