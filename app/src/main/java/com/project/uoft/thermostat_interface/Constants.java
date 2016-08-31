@@ -4,7 +4,7 @@ package com.project.uoft.thermostat_interface;
  *  The Constants class contains information about client ID and secret.
  */
 public class Constants {
-    public static final String CLIENT_ID = "4d59dd30-dc88-424d-9616-f8126ce02cd8";
-    public static final String CLIENT_SECRET = "6FdSHXU6MO4pOsUkqF0wz3P0J";
+    public static final String CLIENT_ID = "2dde967e-11e3-471a-a239-189b51aa0040";
+    public static final String CLIENT_SECRET = "N4rCR9dc1brCPKTASMyHspVv2";
     public static final String REDIRECT_URL = "http://localhost/";
 }

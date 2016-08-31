@@ -94,6 +94,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
     //Database
     private Database mDB;
 
+    //Energy
+    private Energy mEnergy;
+
     //Remote Config
     private FirebaseRemoteConfig mFirebaseRemoteConfig;
     private long cacheExpiration;
@@ -170,6 +173,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
         // Initialize Database class
         mDB = new Database();
 
+        // Initialize Energy class
+        mEnergy = new Energy();
+
         // Initialize Remote Config
         mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
         FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
@@ -221,6 +227,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 break;
             case R.id.menu_settings:
                 Log.v(TAG,"clicked Settings");
+                Intent intent = new Intent(this, SettingsActivity.class);
+                String UID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                intent.putExtra("UID", UID);
+                startActivity(intent);
                 break;
             case R.id.menu_away:
                 Log.v(TAG,"clicked home/away");
@@ -325,7 +335,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     /**
      * Called when you are no longer visible to the user. You will next receive either onRestart(),
      * onDestroy(), or nothing, depending on later user activity.
-     * It removes all the listeners, also signs the user out of the Firebase server.
+     * It removes all the listeners
      */
     @Override
     protected void onStop() {
@@ -333,7 +343,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         super.onStop();
         mNest.removeAllListeners();
         Auth.removeAuthListener();
-        Auth.signOut();
+//        Auth.signOut();
     }
 
     /**

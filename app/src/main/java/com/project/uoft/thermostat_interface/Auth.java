@@ -120,7 +120,10 @@ public class Auth implements Executor {
                         if(task.isSuccessful()){
                             FirebaseUser user = firebaseAuth.getCurrentUser();
                             User newUser = new User(email);
-                            Database.writeNewUser(user.getUid(), newUser);
+                            String UID = user.getUid();
+                            Database.writeNewUser(UID, newUser);
+                            Database.writeACPower(UID, Energy.DEFAULT_COOLING_POWER);
+                            Database.writeHeatPower(UID, Energy.DEFAULT_HEATING_POWER);
                         }
                     }
                 });

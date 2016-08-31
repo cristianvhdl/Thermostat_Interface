@@ -1,5 +1,12 @@
 package com.project.uoft.thermostat_interface;
 
+import android.util.Log;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
+
 import java.util.Calendar;
 
 /**
@@ -8,17 +15,53 @@ import java.util.Calendar;
 public class Energy {
 
     private static final String TAG = Energy.class.getSimpleName();
-
-    public static double HEATING_RATE = 0.1f; // degree per minute (C)
-    public static double COOLING_RATE = 0.1f; // degree per minute (C)
-    public static double HEATING_POWER = 3.5f;    // kW for heating
-    public static double COOLING_POWER = 3.5f;    // kW for cooling
-    public static double MAINTAIN_PERCENTAGE = 0.2; // percentage of time the HVAC is ON to maintain the target temperature
-
     // Time-of-Use Rates cents per kWh, weekends and holidays are off-peak all day
     public static final double ELEC_ON_PEAK = 18f;    // 11 am - 4 pm
     public static final double ELEC_MID_PEAK = 13.2f; // 7-10 am & 5-6 pm
     public static final double ELEC_OFF_PEAK = 8.7f;  // 7pm - 6am
+    public static final double DEFAULT_HEATING_POWER = 3.5f;
+    public static final double DEFAULT_COOLING_POWER = 3.5f;
+
+    public static double HEATING_RATE = 0.1f; // degree per minute (C)
+    public static double COOLING_RATE = 0.1f; // degree per minute (C)
+    public static double HEATING_POWER = DEFAULT_HEATING_POWER;    // kW for heating
+    public static double COOLING_POWER = DEFAULT_COOLING_POWER;    // kW for cooling
+    public static double MAINTAIN_PERCENTAGE = 0.2; // percentage of time the HVAC is ON to maintain the target temperature
+
+
+    /**
+     * Constructor for the Energy class
+     * It retrieves the cooling power and heating power from the Firebase database
+     */
+    Energy(){
+        ValueEventListener postListenerAC = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                COOLING_POWER = Double.parseDouble(dataSnapshot.getValue().toString());
+                Log.v(TAG, "COOLING_POWER = "+ COOLING_POWER);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w(TAG, "onCancelled", databaseError.toException());
+            }
+        };
+        ValueEventListener postListenerHeat = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                HEATING_POWER = Double.parseDouble(dataSnapshot.getValue().toString());
+                Log.v(TAG, "HEATING_POWER = "+ HEATING_POWER);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w(TAG, "onCancelled", databaseError.toException());
+            }
+        };
+        String UID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        Database.mDatabase.child("users").child(UID).child(Database.KEY_AC_POWER).addValueEventListener(postListenerAC);
+        Database.mDatabase.child("users").child(UID).child(Database.KEY_HEAT_POWER).addValueEventListener(postListenerHeat);
+    }
 
     /**
      * It calculates how many minutes it takes to reach target temperature from current room temperature.
