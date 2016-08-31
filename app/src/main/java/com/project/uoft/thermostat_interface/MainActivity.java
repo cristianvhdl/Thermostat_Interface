@@ -36,7 +36,11 @@ import com.project.uoft.thermostat_interface.widget.VerticalSeekBar;
 import java.util.Date;
 import java.util.Locale;
 
+/**
+ * The main activity of the application.
+ */
 public class MainActivity extends Activity implements View.OnClickListener {
+    // Constants
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final String THERMOSTAT_KEY = "thermostat_key";
     private static final String STRUCTURE_KEY = "structure_key";
@@ -52,8 +56,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private static final String REDIRECT_URL = Constants.REDIRECT_URL;
     private static final int AUTH_TOKEN_REQUEST_CODE = 123;
 
+    // Variables
     private int saving;
     private double display_temp;
+    private long ui_mode;
     private static Context context;
 
     // Nest related
@@ -63,7 +69,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private Structure mStructure;
     private Activity mActivity;
 
-    // UI related
+    // UI components
     // General UI components
     private Menu menu;
     private TextView mAmbientTempText;
@@ -92,6 +98,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private FirebaseRemoteConfig mFirebaseRemoteConfig;
     private long cacheExpiration;
 
+    /**
+     * It initialize the main activity.
+     *
+     * @param savedInstanceState    It contains data used to restore the activity to a previous state.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -140,7 +151,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         // Nest and Firebase Authentication
         mToken = Auth.loadAuthToken(this);
-        Auth.initialize();
+        Auth.initializeFirebaseAuth();
         if (mToken != null) {
             authenticate(mToken);
         } else {
@@ -174,6 +185,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
         updateUIMode();
     }
 
+    /**
+     * It initializes the menu button located on the toolbar.
+     *
+     * @param menu  Menu object waiting to be inflated by the main_menu.xml.
+     * @return  super.onCreateOptionsMenu(menu) will execute any code that has to be
+     *           executed for the options menu to work properly.
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
         getMenuInflater().inflate(R.menu.main_menu, menu);
@@ -182,6 +200,17 @@ public class MainActivity extends Activity implements View.OnClickListener {
         return super.onCreateOptionsMenu(menu);
     }
 
+    /**
+     * It determines what to do when a menu item is clicked.
+     * The Refresh UI item updates the UI if the remote config parameter is changed through Firebase console.
+     * The Settings item launches a new activity that allow the user to change some settings.
+     * The I'm Home/Away item toggles the home/away status of the user.
+     * The Logout button logs out the user.
+     *
+     * @param item  It contains the menu items in the Menu
+     * @return  super.onOptionsItemSelected(item) will execute any code that has to be
+     *           executed for the menu item to work properly.
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         switch(item.getItemId()){
@@ -226,6 +255,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * It updates the text of one of the menu items: the home/away toggle button
+     */
     private void updateMenuItems(){
         String awayState = mStructure.getAway();
         MenuItem menuAway = menu.findItem(R.id.menu_away);
@@ -240,6 +272,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
 //        return MainActivity.context;
 //    }
 
+    /**
+     * It stores information to a bundle which is used to restore the activity to a previous state.
+     * It saves the Thermostat and Structure object.
+     *
+     * @param outState The storage bundle.
+     */
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -247,6 +285,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
         outState.putParcelable(STRUCTURE_KEY, mStructure);
     }
 
+    /**
+     * Called when an activity you launched exits, giving you the requestCode you started it with,
+     * the resultCode it returned, and any additional data from it.
+     *
+     * @param requestCode   The integer request code originally supplied to startActivityForResult(),
+     *                       allowing you to identify who this result came from.
+     * @param resultCode    The integer result code returned by the child activity through its setResult().
+     * @param intent    An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         if (resultCode != RESULT_OK || requestCode != AUTH_TOKEN_REQUEST_CODE) {
@@ -263,6 +310,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
     }
 
+    /**
+     * Called after onCreate(Bundle) or after onRestart() when the activity had been stopped,
+     * but is now again being displayed to the user. It will be followed by onResume().
+     * It adds te authentication listener for Firebase.
+     */
     @Override
     public void onStart(){
         super.onStart();
@@ -270,6 +322,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
 //        fetchData();
     }
 
+    /**
+     * Called when you are no longer visible to the user. You will next receive either onRestart(),
+     * onDestroy(), or nothing, depending on later user activity.
+     * It removes all the listeners, also signs the user out of the Firebase server.
+     */
     @Override
     protected void onStop() {
         Log.d(TAG, "onStop");
@@ -279,6 +336,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
         Auth.signOut();
     }
 
+    /**
+     * Click listener for buttons
+     *
+     * @param v The view
+     */
     @Override
     public void onClick(View v) {
         if (mThermostat == null || mStructure == null) {
@@ -345,7 +407,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 if (display_temp != init_temp){ //if target temp is different from initial temperature
                     mNest.thermostats.setTargetTemperatureC(mThermostat.getDeviceId(), display_temp);
                     Date timeStamp = new Date();
-                    Action newAction = new Action(mThermostat.getTargetTemperatureC(), display_temp, mThermostat.getAmbientTemperatureC(), saving);
+                    Action newAction = new Action(mThermostat.getTargetTemperatureC(),
+                            display_temp,
+                            mThermostat.getAmbientTemperatureC(),
+                            saving,
+                            mode,
+                            ""+ui_mode);
                     String UID = FirebaseAuth.getInstance().getCurrentUser().getUid();
                     Database.writeNewAction(UID, timeStamp, newAction);
                 }
@@ -355,24 +422,24 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     display_temp+=0.5;
                 else if(display_temp > 9 && KEY_HEAT.equals(mode) && isHeating)
                     display_temp-=0.5;
-                updateSingleControlView();
+                updateControlView();
                 break;
             case R.id.temp_up:
                 if(display_temp < 32)
                     display_temp+=0.5;
-                updateSingleControlView();
+                updateControlView();
                 break;
             case R.id.saving_down:
                 if(display_temp > 9 && KEY_COOL.equals(mode))
                     display_temp-=0.5;
                 else if(display_temp < 32 && KEY_HEAT.equals(mode))
                     display_temp+=0.5;
-                updateSingleControlView();
+                updateControlView();
                 break;
             case R.id.temp_down:
                 if(display_temp > 9)
                     display_temp-=0.5;
-                updateSingleControlView();
+                updateControlView();
                 break;
             case R.id.heat:
                 mNest.thermostats.setHVACMode(thermostatID, KEY_HEAT);
@@ -419,6 +486,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     /**
      * Setup global listener, start listening, and update view when update received.
+     *
      */
     private void fetchData() {
         mNest.addGlobalListener(new NestListener.GlobalListener() {
@@ -435,6 +503,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
         });
     }
 
+    /**
+     * It updates all views
+     */
     private void updateViews() {
         if (mStructure == null || mThermostat == null) {
             return;
@@ -446,8 +517,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 //        updateStructureViews();
         updateMenuItems();
         updateThermostatViews();
-        updateSingleControlView();
-
+        updateControlView();
 
         //update the seekbar progress
         double temp = display_temp;
@@ -456,17 +526,21 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mTempSeekbar.setProgress((int)((display_temp-9)/(32-9)*100));
     }
 
+    /**
+     *
+     */
     private void updateAmbientTempTextView() {
         mAmbientTempText.setText(String.format(Locale.CANADA, DEG_C, mThermostat.getAmbientTemperatureC()));
     }
 
+    /**
+     *
+     */
     private void updateThermostatViews() {
-//        int singleControlVisibility;
         String mode = mThermostat.getHvacMode();
         String state = mStructure.getAway();
         boolean isAway = state.equals(KEY_AWAY) || state.equals(KEY_AUTO_AWAY);
         Drawable default_btn_bg = findViewById(R.id.confirm_btn).getBackground();
-//        singleControlVisibility = View.VISIBLE;
 
         if(KEY_HEAT.equals(mode)){
             findViewById(R.id.heat).setBackground(ContextCompat.getDrawable(this,R.drawable.highlight_button));
@@ -492,7 +566,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mElecStatusText.setText("Electricity Status: "+ Energy.currElecStatus());
     }
 
-    private void updateSingleControlView() {
+    /**
+     * It updates the temperature controller
+     */
+    private void updateControlView() {
         int thermDrawable = R.drawable.off_thermostat_drawable;
         int mercuryDrawable = R.drawable.clip_mercury_off;
         int upColor = Color.WHITE;
@@ -509,7 +586,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         GradientDrawable shapeBottom1 = (GradientDrawable) mThermometerBottom1.getDrawable();
         GradientDrawable shapeBottom2 = (GradientDrawable) mThermometerBottom2.getDrawable();
 
-        Log.v(TAG, "updateSingleControlView");
+        Log.v(TAG, "updateControlView");
 
         if (isHeating) {
             thermDrawable = R.drawable.heat_thermostat_drawable;
@@ -542,8 +619,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
         updateSaving(!isCooling && !isHeating);
     }
 
-    /*
-    Todo: update comment
+    /**
+     * It updates the saving amount and corresponding UI components
+     *
+     * @param isOff Whether the HVAC is off
      */
     private void updateSaving(boolean isOff) {
         String mode = mThermostat.getHvacMode();
@@ -597,6 +676,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
     }
 
+    /**
+     * The listener for the vertical seekbar used in the UI with thermometer style temp controller
+     */
     private void setSeekbarListener(){
         mTempSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
@@ -611,7 +693,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 if(progress<=100 && progress>=0){
                     display_temp = Tools.roundToHalf((32-9)*progress/100.0+9);
                     Log.v(TAG, "onProgressChanged: temp:"+display_temp+"seekbar progress="+progress);
-                    updateSingleControlView();
+                    updateControlView();
                     ClipDrawable mMercuryClip = (ClipDrawable) mMercuryImg.getDrawable();
                     mMercuryClip.setLevel(progress*100);
                 }
@@ -619,6 +701,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
         });
     }
 
+    /**
+     * It changes the UI based on selected mode.
+     *
+     * @param mode The new UI mode that will replace the old one.
+     */
     private void changeUIMode(int mode){
         findViewById(R.id.ui_circle_thermostat).setVisibility(View.GONE);
         findViewById(R.id.ui_coinstack_thermometer).setVisibility(View.GONE);
@@ -652,6 +739,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
         updateViews();
     }
 
+    /**
+     * It checks the ui_mode parameter on the Firebase remote config console then change the application UI accordingly
+     */
     private void updateUIMode(){
         // [START fetch_config_with_callback]
         // cacheExpirationSeconds is set to cacheExpiration here, indicating that any previously
@@ -671,7 +761,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     Log.e(TAG,"remote_config fetch failed");
                 }
                 // change the UI mode
-                long ui_mode = mFirebaseRemoteConfig.getLong("ui_mode");
+                ui_mode = mFirebaseRemoteConfig.getLong("ui_mode");
                 changeUIMode((int)ui_mode);
             }
         });

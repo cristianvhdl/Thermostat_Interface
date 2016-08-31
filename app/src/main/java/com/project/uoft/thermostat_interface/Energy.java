@@ -1,11 +1,10 @@
 package com.project.uoft.thermostat_interface;
 
-/**
- ToDo: add comments
- */
-
 import java.util.Calendar;
 
+/**
+ * The Energy class encapsulates energy usage related methods.
+ */
 public class Energy {
 
     private static final String TAG = Energy.class.getSimpleName();
@@ -21,7 +20,14 @@ public class Energy {
     public static final double ELEC_MID_PEAK = 13.2f; // 7-10 am & 5-6 pm
     public static final double ELEC_OFF_PEAK = 8.7f;  // 7pm - 6am
 
-    // how many minutes it takes to reach target temperature
+    /**
+     * It calculates how many minutes it takes to reach target temperature from current room temperature.
+     *
+     * @param currTempC Current room temperature.
+     * @param tarTempC  Target termperature.
+     * @param cooling   If the HVAC system is cooling.
+     * @return  How many minutes it takes to reach target temperature from current room temperature.
+     */
     public static double timeToTemp(double currTempC, double tarTempC, boolean cooling){
         if(cooling){
             return Math.abs(tarTempC - currTempC)/COOLING_RATE;
@@ -30,22 +36,30 @@ public class Energy {
         }
     }
 
-    // how much cents it takes to reach target temperature
+    /**
+     * It calculates how much cents it costs to reach target temperature.
+     *
+     * @param currTempC Current room temperature.
+     * @param tarTempC  Target termperature.
+     * @param cooling   Whether the HVAC system is cooling.
+     * @return How much cents it costs to reach target temperature.
+     */
     public static double tempToCents(double currTempC, double tarTempC, boolean cooling){
         double elec_price = currElecPrice();
         double power;
         power = cooling?COOLING_POWER:HEATING_POWER;    // power=cooling_power if mode=Cooling or power=heating_power
-//        if(cooling){
-//            power = COOLING_POWER;
-//        }else{
-//            power = HEATING_POWER;
-//        }
 
 //        Log.v(TAG, "Need "+ timeToTemp(currTempC, tarTempC, cooling)/60 + "hours to reach "+tarTempC +" C");
         return timeToTemp(currTempC, tarTempC, cooling)/60 * power * elec_price;
     }
 
-    // calculate the cost to maintain target temp
+    /**
+     * It calculate the cost per hour to maintain target temperature.
+     * It needs to be reworked because the calculation is very inaccurate.
+     *
+     * @param cooling   Whether the HVAC system is cooling.
+     * @return  Cost per hour to maintain target temperature.
+     */
     public static double centsToMaintain(boolean cooling){
         double elec_price = currElecPrice();
         double power = cooling?COOLING_POWER:HEATING_POWER; // power=cooling_power if mode=Cooling or power=heating_power
@@ -53,26 +67,12 @@ public class Energy {
         return power * MAINTAIN_PERCENTAGE * elec_price;
     }
 
-
-    // how much can a given saving amount change the target temperature
-//    public static double centsToTemp(double cents, double ambientTempC, boolean cooling){
-//        double elec_price = currElecPrice();
-//        double power, rate, duration, tempDiff;
-//
-//        if(cooling){
-//            power = COOLING_POWER;
-//            rate = COOLING_RATE;
-//        }else{
-//            power = HEATING_POWER;
-//            rate = HEATING_RATE * -1;
-//        }
-//
-//        duration = cents/(elec_price*power)*60;
-//        tempDiff = duration*rate;
-//
-//        return tempDiff;
-//    }
-
+    /**
+     * It tells you the electricity status based on time of the day.
+     * Modification is required for this method, because it can not identify holidays.
+     *
+     * @return Electricity status: OFF PEAK, MID PEAK or ON PEAK.
+     */
     public static String currElecStatus(){
         String status = "OFF PEAK";
 
@@ -93,6 +93,11 @@ public class Energy {
         return status;
     }
 
+    /**
+     * It tells you the electricity price based on time of the day.
+     *
+     * @return  Current electricity price.
+     */
     public static double currElecPrice(){
         double price = ELEC_OFF_PEAK;   //default price
 

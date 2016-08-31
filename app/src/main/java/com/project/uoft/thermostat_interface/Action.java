@@ -1,17 +1,33 @@
 package com.project.uoft.thermostat_interface;
+
 /**
- ToDo: add comments
+ * Information about user action.
+ * The newly created Action object will be sent to the Firebase realtime database
  */
 public class Action {
-    Double oldTemp;
+    Double initTemp;
     Double newTemp;
     Double ambientTemp;
     int saving;
+    String HVACMode;
+    String UIMode;
 
-    Action(Double t1, Double t2, Double aT, int s){
-        oldTemp = t1;
-        newTemp = t2;
-        ambientTemp = aT;
-        saving = s;
+    /**
+     * Constructor for the Action class
+     *
+     * @param initTemp  Initial target temperature.
+     * @param newTemp   New target temperature.
+     * @param ambientTemp   Room temperature.
+     * @param saving    Potential saving amount.
+     * @param HVACMode  Current HVAC mode (heating or cooling).
+     * @param UIMode    The UI design is used by the user.
+     */
+    Action(Double initTemp, Double newTemp, Double ambientTemp, int saving, String HVACMode, String UIMode){
+        this.initTemp = initTemp;
+        this.newTemp = newTemp;
+        this.ambientTemp = ambientTemp;
+        this.saving = saving;
+        this.HVACMode = HVACMode;
+        this.UIMode = UIMode;
     }
 }
