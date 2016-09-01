@@ -30,10 +30,11 @@ public class Energy {
 
 
     /**
-     * Constructor for the Energy class
-     * It retrieves the cooling power and heating power from the Firebase database
+     * Constructor for the Energy class.
+     * It retrieves the cooling power and heating power from the Firebase database for the current user.
      */
     Energy(){
+        // Value event listener for cooling power
         ValueEventListener postListenerAC = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -46,6 +47,7 @@ public class Energy {
                 Log.w(TAG, "onCancelled", databaseError.toException());
             }
         };
+        // Value event listener for heating power
         ValueEventListener postListenerHeat = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -59,8 +61,9 @@ public class Energy {
             }
         };
         String UID;
-        if(FirebaseAuth.getInstance().getCurrentUser() != null){
+        if(FirebaseAuth.getInstance().getCurrentUser() != null){    // to avoid null exception
             UID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            // Add listeners, but the listeners will trigger once and then does not trigger again
             Database.mDatabase.child("users").child(UID).child(Database.KEY_AC_POWER).addValueEventListener(postListenerAC);
             Database.mDatabase.child("users").child(UID).child(Database.KEY_HEAT_POWER).addValueEventListener(postListenerHeat);
             Log.v(TAG,"Retrieve Power Value Successful");

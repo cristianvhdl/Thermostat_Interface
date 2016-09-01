@@ -159,7 +159,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             mNest.launchAuthFlow(this, AUTH_TOKEN_REQUEST_CODE);
         }
 
-        // If the activity need to be re-created
+        // If the activity need to be restored
         if (savedInstanceState != null) {
             Log.v(TAG, "savedInstanceState != null");
             mThermostat = savedInstanceState.getParcelable(THERMOSTAT_KEY);
@@ -229,6 +229,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             case R.id.menu_away:
                 Log.v(TAG,"clicked home/away");
                 String awayState = mStructure.getAway();
+                // Sets awayState
                 if (KEY_AUTO_AWAY.equals(awayState) || KEY_AWAY.equals(awayState)) {
                     awayState = KEY_HOME;
                 } else if (KEY_HOME.equals(awayState)) {
@@ -237,6 +238,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     break;
                 }
 
+                // Change away status
                 mNest.structures.setAway(mStructure.getStructureId(), awayState, new Callback() {
                     @Override
                     public void onSuccess() {
@@ -260,7 +262,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     /**
-     * It updates the text of one of the menu items: the home/away toggle button
+     * It updates the text of one of the menu items: the home/away toggle button.
      */
     private void updateMenuItems(){
         String awayState = mStructure.getAway();
@@ -317,19 +319,19 @@ public class MainActivity extends Activity implements View.OnClickListener {
     /**
      * Called after onCreate(Bundle) or after onRestart() when the activity had been stopped,
      * but is now again being displayed to the user. It will be followed by onResume().
-     * It adds te authentication listener for Firebase.
+     * It re-adds listeners for Nest and Firebase authentication.
      */
     @Override
     public void onStart(){
         super.onStart();
         Auth.addAuthListener();
-//        fetchData();
+        fetchData();
     }
 
     /**
      * Called when you are no longer visible to the user. You will next receive either onRestart(),
      * onDestroy(), or nothing, depending on later user activity.
-     * It removes all the listeners
+     * It removes all the listeners.
      */
     @Override
     protected void onStop() {
@@ -337,11 +339,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
         super.onStop();
         mNest.removeAllListeners();
         Auth.removeAuthListener();
-//        Auth.signOut();
     }
 
     /**
-     * Click listener for buttons
+     * Click listener for buttons.
      *
      * @param v The view
      */
@@ -363,7 +364,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         boolean isCooling = KEY_COOL.equals(mode) && tempDiffC < 0;
 
         switch (v.getId()) {
-            case R.id.coin_img:
+            case R.id.coin_img: // switch size with the circular controller in UI 0
                 Log.d(TAG, "Clicked Coin");
                 coinRadius = (int) (getResources().getDimension(R.dimen.thermostat_radius));
                 savingTextSize = (int) (getResources().getDimension(R.dimen.coin_text_size_big)/ getResources().getDisplayMetrics().density);
@@ -385,7 +386,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 mTargetTempText.setTextSize(tempTextSize);
 
                 break;
-            case R.id.thermostat_view:
+            case R.id.thermostat_view:  // switch size with the big coin in UI 0
                 Log.d(TAG, "Clicked Thermostat");
                 coinRadius = (int) (getResources().getDimension(R.dimen.coin_radius));
                 savingTextSize = (int) (getResources().getDimension(R.dimen.coin_text_size_normal)/ getResources().getDisplayMetrics().density);
@@ -406,7 +407,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 mTempDown.setVisibility(View.VISIBLE);
                 mTargetTempText.setTextSize(tempTextSize);
                 break;
-            case R.id.confirm_btn:
+            case R.id.confirm_btn:  // confirms new temperature settings, sends user action to Firebase database
                 Log.d(TAG, "Clicked Confirm");
                 if (display_temp != init_temp){ //if target temp is different from initial temperature
                     mNest.thermostats.setTargetTemperatureC(mThermostat.getDeviceId(), display_temp);
@@ -421,37 +422,37 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     Database.writeNewAction(UID, timeStamp, newAction);
                 }
                 break;
-            case R.id.saving_up:
+            case R.id.saving_up:    // when the + button on the big coin in UI 0 is clicked
                 if(display_temp < 32 && KEY_COOL.equals(mode) && isCooling)
                     display_temp+=0.5;
                 else if(display_temp > 9 && KEY_HEAT.equals(mode) && isHeating)
                     display_temp-=0.5;
                 updateControlView();
                 break;
-            case R.id.temp_up:
+            case R.id.temp_up:  // when the + button on the circular controller in UI 0 is clicked
                 if(display_temp < 32)
                     display_temp+=0.5;
                 updateControlView();
                 break;
-            case R.id.saving_down:
+            case R.id.saving_down:  // when the - button on the big coin in UI 0 is clicked
                 if(display_temp > 9 && KEY_COOL.equals(mode))
                     display_temp-=0.5;
                 else if(display_temp < 32 && KEY_HEAT.equals(mode))
                     display_temp+=0.5;
                 updateControlView();
                 break;
-            case R.id.temp_down:
+            case R.id.temp_down:    // when the - button on the circular controller in UI 0 is clicked
                 if(display_temp > 9)
                     display_temp-=0.5;
                 updateControlView();
                 break;
-            case R.id.heat:
+            case R.id.heat: // when the heat button is clicked, switch HVAC mode to heat
                 mNest.thermostats.setHVACMode(thermostatID, KEY_HEAT);
                 break;
-            case R.id.cool:
+            case R.id.cool: // when the cool button is clicked, switch HVAC mode to cool
                 mNest.thermostats.setHVACMode(thermostatID, KEY_COOL);
                 break;
-            case R.id.off:
+            case R.id.off:  // when the off button  is clicked, switch HVAC mode to off
                 mNest.thermostats.setHVACMode(thermostatID, KEY_OFF);
                 break;
         }
@@ -508,7 +509,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     /**
-     * It updates all views
+     * It updates all views, also update the progress of the hidden seekbar in UI 1.
+     *
      */
     private void updateViews() {
         if (mStructure == null || mThermostat == null) {
@@ -517,8 +519,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         display_temp = mThermostat.getTargetTemperatureC();
         Log.v(TAG,"updateViews: display_temp="+display_temp);
+        // updates all views
         updateAmbientTempTextView();
-//        updateStructureViews();
         updateMenuItems();
         updateThermostatViews();
         updateControlView();
@@ -531,14 +533,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     /**
-     *
+     * It update the room temperature.
      */
     private void updateAmbientTempTextView() {
         mAmbientTempText.setText(String.format(Locale.CANADA, DEG_C, mThermostat.getAmbientTemperatureC()));
     }
 
     /**
-     *
+     * It updates the look of HVAC mode buttons and electricity status.
      */
     private void updateThermostatViews() {
         String mode = mThermostat.getHvacMode();
@@ -571,9 +573,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     /**
-     * It updates the temperature controller
+     * It updates the temperature controller.
      */
     private void updateControlView() {
+        // initialize varables with default value
         int thermDrawable = R.drawable.off_thermostat_drawable;
         int mercuryDrawable = R.drawable.clip_mercury_off;
         int upColor = Color.WHITE;
@@ -592,13 +595,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         Log.v(TAG, "updateControlView");
 
-        if (isHeating) {
+        // change varables based on HVAC status
+        if (isHeating) {    // if the HVAC is heating
             thermDrawable = R.drawable.heat_thermostat_drawable;
             mercuryDrawable = R.drawable.clip_mercury_heat;
             upColor = Color.RED;
             downColor = Color.GREEN;
             thermometerColor = ContextCompat.getColor(context, R.color.heat);
-        } else if (isCooling) {
+        } else if (isCooling) { // if the HVAC is cooling
             thermDrawable = R.drawable.cool_thermostat_drawable;
             mercuryDrawable = R.drawable.clip_mercury_cool;
             upColor = Color.GREEN;
@@ -624,9 +628,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     /**
-     * It updates the saving amount and corresponding UI components
+     * It updates the saving amount and corresponding UI components.
      *
-     * @param isOff Whether the HVAC is off
+     * @param isOff Whether the HVAC is off.
      */
     private void updateSaving(boolean isOff) {
         String mode = mThermostat.getHvacMode();
@@ -638,7 +642,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         double ambientC = mThermostat.getAmbientTemperatureC();
         if(temp_diff == 0) {
             mSavingText.setText("¢ " + 0);
-            // changing the height of the coin stack based on saving amount
+            // changing the height of the coin stack based on saving amount (UI1)
             ClipDrawable mCoinStackClip = (ClipDrawable) mCoinStackImg.getDrawable();
             mCoinStackClip.setLevel(0);
         }
@@ -681,7 +685,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     /**
-     * The listener for the vertical seekbar used in the UI with thermometer style temp controller
+     * The listener for the hidden vertical seekbar used in the UI with thermometer style temp controller (UI1).
      */
     private void setSeekbarListener(){
         mTempSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -695,9 +699,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress,boolean fromUser) {
                 if(progress<=100 && progress>=0){
+                    // change display temp based on seekbar progress and update the view
                     display_temp = Tools.roundToHalf((32-9)*progress/100.0+9);
                     Log.v(TAG, "onProgressChanged: temp:"+display_temp+"seekbar progress="+progress);
                     updateControlView();
+                    // update the mercury of the thermometer
                     ClipDrawable mMercuryClip = (ClipDrawable) mMercuryImg.getDrawable();
                     mMercuryClip.setLevel(progress*100);
                 }
@@ -747,11 +753,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
      * It checks the ui_mode parameter on the Firebase remote config console then change the application UI accordingly
      */
     private void updateUIMode(){
-        // [START fetch_config_with_callback]
-        // cacheExpirationSeconds is set to cacheExpiration here, indicating that any previously
-        // fetched and cached config would be considered expired because it would have been fetched
-        // more than cacheExpiration seconds ago. Thus the next fetch would go to the server unless
-        // throttling is in progress. The default expiration duration is 43200 (12 hours).
+        // Fetches ui_mode (remote config parameter) from Firebase console
         mFirebaseRemoteConfig.fetch(cacheExpiration).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {

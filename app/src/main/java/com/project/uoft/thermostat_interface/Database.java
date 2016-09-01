@@ -15,6 +15,7 @@ public class Database {
     private static final String USERS = "users";
     public static final String KEY_AC_POWER = "AC_Power";
     public static final String KEY_HEAT_POWER = "Heat_Power";
+
     public static FirebaseDatabase instance;
     public static DatabaseReference mDatabase;
 
@@ -61,8 +62,8 @@ public class Database {
     /**
      * It writes the Heating power to the Firebase database
      *
-     * @param UID   User ID
-     * @param heatPower Heating power in kW
+     * @param UID   User ID.
+     * @param heatPower Heating power in kW.
      */
     public static void writeHeatPower(String UID, Double heatPower){
         mDatabase.child(USERS).child(UID).child(KEY_HEAT_POWER).setValue(heatPower);

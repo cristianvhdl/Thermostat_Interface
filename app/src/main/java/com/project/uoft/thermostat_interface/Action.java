@@ -2,7 +2,7 @@ package com.project.uoft.thermostat_interface;
 
 /**
  * Information about user action.
- * The newly created Action object will be sent to the Firebase realtime database
+ * The newly created Action object will be sent to the Firebase realtime database.
  */
 public class Action {
     Double initTemp;
@@ -13,7 +13,7 @@ public class Action {
     String UIMode;
 
     /**
-     * Constructor for the Action class
+     * Constructor for the Action class.
      *
      * @param initTemp  Initial target temperature.
      * @param newTemp   New target temperature.

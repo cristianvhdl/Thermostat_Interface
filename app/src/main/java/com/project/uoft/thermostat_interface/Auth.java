@@ -40,7 +40,7 @@ public class Auth implements Executor {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if(user != null){
                     isSignedIn = true;
-                    Energy mEnergy = new Energy();
+                    Energy mEnergy = new Energy();  // The constructor for energy class requires user to be logged in
                     Log.d(TAG, "onAuthStateChanged: signed in with ID: " + user.getUid());
                 }else{
                     isSignedIn = false;
@@ -75,7 +75,7 @@ public class Auth implements Executor {
     }
 
     /**
-     * Sign the user in with his/her structure ID as email and thermostat device ID as password
+     * Sign the user in with his/her structure ID as email and thermostat device ID as password.
      * If the user is not exist on the Firebase server, sign the user up with the email/password
      * using the signUp method.
      *
@@ -181,10 +181,8 @@ public class Auth implements Executor {
      * the Auth class need to implement Executor interface which requires execute method.
      * This method has no implementation and no usage for the program.
      *
-     * @param command   The command
+     * @param command   The command.
      */
     @Override
-    public void execute(@NonNull Runnable command) {
-
-    }
+    public void execute(@NonNull Runnable command) {    }
 }
