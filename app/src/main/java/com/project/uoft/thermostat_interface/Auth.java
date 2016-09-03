@@ -23,9 +23,9 @@ import java.util.concurrent.Executor;
 public class Auth implements Executor {
     private static final String TOKEN_KEY = "token";
     private static final String EXPIRATION_KEY = "expiration";
-    private static final String TAG = Auth.class.getSimpleName();
     private static FirebaseAuth firebaseAuth;
-    private static FirebaseAuth.AuthStateListener mAuthListener;
+    public static final String TAG = Auth.class.getSimpleName();
+    public static FirebaseAuth.AuthStateListener mAuthListener;
 
     public static boolean isSignedIn = false;
 
@@ -40,7 +40,9 @@ public class Auth implements Executor {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if(user != null){
                     isSignedIn = true;
-                    Energy mEnergy = new Energy();  // The constructor for energy class requires user to be logged in
+                    new Energy();  // The constructor for energy class requires user to be logged in
+//                    new Database();
+                    MainActivity.UID = user.getUid();
                     Log.d(TAG, "onAuthStateChanged: signed in with ID: " + user.getUid());
                 }else{
                     isSignedIn = false;
@@ -95,6 +97,8 @@ public class Auth implements Executor {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
                     Log.d(TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
+                    new Energy();
+                    MainActivity.UID = firebaseAuth.getCurrentUser().getUid();
 
                     if (!task.isSuccessful()) {
                         Log.w(TAG, "signInWithEmail:failed", task.getException());

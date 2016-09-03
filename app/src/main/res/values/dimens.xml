@@ -20,4 +20,6 @@
     <dimen name="thermometer_mercury_width">14dp</dimen>
     <dimen name="thermometer_mercury_height">195dp</dimen>
 
+    <dimen name="settings_item_padding">5dp</dimen>
+
 </resources>

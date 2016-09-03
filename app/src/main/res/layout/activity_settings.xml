@@ -10,9 +10,31 @@
     tools:context="com.project.uoft.thermostat_interface.SettingsActivity">
 
     <RelativeLayout
+        android:id="@+id/ui_picker_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/ui_picker_text"
+            android:text="Pick a UI design:"
+            android:textSize="20sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"/>
+
+        <Spinner
+            android:id="@+id/ui_picker_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/ui_picker_text" />
+    </RelativeLayout>
+
+    <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/ac_power_layout">
+        android:id="@+id/ac_power_layout"
+        android:layout_below="@+id/ui_picker_layout"
+        android:paddingTop="@dimen/settings_item_padding">
         <TextView
             android:id="@+id/ac_power_text"
             android:text="AC Power (kW)"
@@ -39,6 +61,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/ac_power_layout"
+        android:paddingTop="@dimen/settings_item_padding"
         android:id="@+id/heat_power_layout">
         <TextView
             android:id="@+id/heat_power_text"
@@ -60,6 +83,39 @@
             android:layout_height="wrap_content"
             android:layout_alignBottom="@id/heat_power_edit_text"
             android:layout_toRightOf="@id/heat_power_edit_text"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/feedback_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/heat_power_layout"
+        android:paddingTop="@dimen/settings_item_padding">
+
+        <TextView
+            android:id="@+id/feedback_title_text"
+            android:text="Feedback"
+            android:textSize="20sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"/>
+
+        <EditText android:id="@+id/feedback_message_edit_text"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/feedback_title_text"
+            android:gravity="top"
+            android:inputType="textMultiLine"
+            android:lines="6"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <Button
+            android:id="@+id/feedback_send_btn"
+            android:text="Leave Feedback"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/feedback_message_edit_text"
+            android:layout_alignParentRight="true"/>
     </RelativeLayout>
 
 </RelativeLayout>

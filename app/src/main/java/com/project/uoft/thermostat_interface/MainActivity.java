@@ -21,6 +21,7 @@ import android.widget.TextView;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.nestlabs.sdk.Callback;
@@ -61,6 +62,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private double display_temp;
     private long ui_mode;
     private static Context context;
+    public static String UID;
+    public static String userSelectedUI;
 
     // Nest related
     private NestAPI mNest;
@@ -92,7 +95,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private VerticalSeekBar mTempSeekbar;
 
     //Database
-    private Database mDB;
+//    private Database mDB;
 
     //Remote Config
     private FirebaseRemoteConfig mFirebaseRemoteConfig;
@@ -110,8 +113,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
         MainActivity.context=getApplicationContext();
 
         // Initializations
-        // General UI components
         mActivity = this;
+        UID="0";
+        ui_mode = 0;
+        userSelectedUI = "default";
+        // General UI components
         mAmbientTempText = (TextView) findViewById(R.id.ambient_temp);
         mWaitText = (TextView) findViewById(R.id.wait_text);
         mTargetTempText = (TextView) findViewById(R.id.target_temp);
@@ -168,7 +174,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
 
         // Initialize Database class
-        mDB = new Database();
+//        mDB = new Database();
 
         // Initialize Remote Config
         mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
@@ -182,7 +188,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         if (mFirebaseRemoteConfig.getInfo().getConfigSettings().isDeveloperModeEnabled()) {
             cacheExpiration = 0;
         }
-        updateUIMode();
+
     }
 
     /**
@@ -222,8 +228,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
             case R.id.menu_settings:
                 Log.v(TAG,"clicked Settings");
                 Intent intent = new Intent(this, SettingsActivity.class);
-                String UID = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                intent.putExtra("UID", UID);
+//                String UID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+//                intent.putExtra("UID", UID);
                 startActivity(intent);
                 break;
             case R.id.menu_away:
@@ -322,10 +328,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
      * It re-adds listeners for Nest and Firebase authentication.
      */
     @Override
-    public void onStart(){
-        super.onStart();
+    public void onResume(){
+        super.onResume();
+        new Database();
         Auth.addAuthListener();
         fetchData();
+        updateUIMode();
     }
 
     /**
@@ -335,11 +343,19 @@ public class MainActivity extends Activity implements View.OnClickListener {
      */
     @Override
     protected void onStop() {
-        Log.d(TAG, "onStop");
         super.onStop();
+        Log.d(TAG, "onStop");
+//        Auth.signOut();
         mNest.removeAllListeners();
         Auth.removeAuthListener();
     }
+
+//    @Override
+//    protected void onDestroy(){
+//        super.onDestroy();
+//        Log.d(TAG,"onDestroy");
+//        Auth.signOut();
+//    }
 
     /**
      * Click listener for buttons.
@@ -418,7 +434,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                             saving,
                             mode,
                             ""+ui_mode);
-                    String UID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+//                    String UID = FirebaseAuth.getInstance().getCurrentUser().getUid();
                     Database.writeNewAction(UID, timeStamp, newAction);
                 }
                 break;
@@ -752,24 +768,38 @@ public class MainActivity extends Activity implements View.OnClickListener {
     /**
      * It checks the ui_mode parameter on the Firebase remote config console then change the application UI accordingly
      */
-    private void updateUIMode(){
-        // Fetches ui_mode (remote config parameter) from Firebase console
-        mFirebaseRemoteConfig.fetch(cacheExpiration).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()) {
-                    Log.v(TAG, "Fetch Succeeded");
-                    // Once the config is successfully fetched it must be activated before newly fetched
-                    // values are returned.
-                    mFirebaseRemoteConfig.activateFetched();
+    public void updateUIMode(){
 
-                } else {
-                    Log.e(TAG,"remote_config fetch failed");
+//        String UID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        Log.d(TAG,"updateUIMode: UID="+UID);
+        if(!UID.equals("0")){
+            Database.getUserSelectedUI(UID);
+            userSelectedUI = Database.userSelectedUI;
+            Log.d(TAG,"user_selected_ui_mode="+userSelectedUI);
+        }
+
+        if(userSelectedUI.equals("default")){
+            // Fetches ui_mode (remote config parameter) from Firebase console
+            mFirebaseRemoteConfig.fetch(cacheExpiration).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()) {
+                        Log.v(TAG, "Fetch Succeeded");
+                        // Once the config is successfully fetched it must be activated before newly fetched
+                        // values are returned.
+                        mFirebaseRemoteConfig.activateFetched();
+
+                    } else {
+                        Log.e(TAG,"remote_config fetch failed");
+                    }
+                    // change the UI mode
+                    ui_mode = mFirebaseRemoteConfig.getLong("ui_mode");
+                    changeUIMode((int)ui_mode);
                 }
-                // change the UI mode
-                ui_mode = mFirebaseRemoteConfig.getLong("ui_mode");
-                changeUIMode((int)ui_mode);
-            }
-        });
+            });
+        }else{
+            changeUIMode(Integer.parseInt(userSelectedUI));
+        }
+
     }
 }

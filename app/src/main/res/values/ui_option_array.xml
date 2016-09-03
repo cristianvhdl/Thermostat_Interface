@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="ui_option_array">
+        <item>Default (allows remote config)</item>
+        <item>Coin + Circular Controller</item>
+        <item>Coin Stack + Thermometer Controller</item>
+        <item>Coin Stack + Circular Controller</item>
+    </string-array>
+</resources>
