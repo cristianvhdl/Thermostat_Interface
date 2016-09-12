@@ -16,3 +16,4 @@ Shaoyu Chen <br />
 
 #Acknowledgements:
 The design is based on Nest sample android app: https://github.com/nestlabs/android-sdk-sample <br />
+Thanks Professor Li Shu, Mark Chignell and Jonathan Rose for supervising this project. <br />
